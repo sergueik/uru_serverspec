@@ -54,17 +54,8 @@ and its 'sourceselect'  attribute. No equivalent mechanism is implemented with C
 One could provision Uru environment from a zip/tar archive, one can also construct a Puppet module for the same. This is a lightweight alternative to [DracoBlue/puppet-rvm](https://github.com/dracoblue/puppet-rvm) module, which is likely need to build Ruby from source anyway.
 
 The `$URU_HOME` home directory with Ruby runtime plus a handful of gems has the following structure:
-```
-+---.gem
-+---reports
-+---ruby
-|   +---bin
-|   +---bin
-...
-+---spec
-    +---local
-```
-![uru folder](https://raw.githubusercontent.com/sergueik/puppetmaster_vagrant/master/uru/screenshots/uru.png)
+![uru folder](https://raw.githubusercontent.com/sergueik/uru_serverspec/master/screenshots/uru-centos.png)
+![uru folder](https://raw.githubusercontent.com/sergueik/uru_serverspec/master/screenshots/uru-windows.png)
 
 It has the following  gems and their dependencies installed:
 ```
@@ -275,7 +266,7 @@ export TAG=$(./uru_rt ls 2>& 1|awk -e '{print $1}')
 
 The results are nicely formatted in a standalone [HTML report](https://coderwall.com/p/gfmeuw/rspec-test-results-in-html):
 
-![resultt](https://raw.githubusercontent.com/sergueik/puppetmaster_vagrant/master/uru/screenshots/result.png)
+![resultt](https://raw.githubusercontent.com/sergueik/uru_serverspec/master/screenshots/result.png)
 
 and a json:
 ```javascript
