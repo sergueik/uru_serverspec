@@ -2,12 +2,13 @@ param (
   [switch]$debug
 )
 
-# $local:URU_HOME='<%= @uru_home -%>'
-# Note: the environment variable URU_HOME should not be exported
-# to prevent the error ---> No rubies registered with uru
+# $local:SERVERSPEC_HOME = '<%= @serverspec_home -%>'
+# Note: the environment variable named URU_HOME should not be created -
+# if such envireonment is exported it will lead to the error
+# ---> No rubies registered with uru
 
-if (($local:URU_HOME -eq $null) -or ($local:URU_HOME -eq '') ) {
-  $local:URU_HOME = 'C:\uru'
+if (($local:SERVERSPEC_HOME -eq $null) -or ($local:SERVERSPEC_HOME -eq '') ) {
+  $local:SERVERSPEC_HOME = 'C:\uru'
 }
 
 $env:PATH = "${env:PATH};${URU_HOME}"
@@ -18,8 +19,8 @@ $RAKE_VERSION = '10.1.0'
 $RUBY_VERSION = '2.1.7'
 $RUBY_VERSION_LONG = '2.1.7-p400'
 $RUBY_TAG_LABEL = $RUBY_VERSION_LONG -replace '[\-\.]', ''
-$URU_RUNNER = "${local:URU_HOME}\uru_rt.exe"
-$RESULTS_PATH = "${local:URU_HOME}\results"
+$URU_RUNNER = "${local:SERVERSPEC_HOME}\uru_rt.exe"
+$RESULTS_PATH = "${local:SERVERSPEC_HOME}\results"
 
 $USERPROFILE = $HOME
 # Cannot overwrite variable HOME because it is read-only or constant.
@@ -46,7 +47,7 @@ if (-not (test-path "${USERPROFILE}\.uru")) {
       "ID": "${RUBY_VERSION_LONG}",
       "TagLabel": "${RUBY_TAG_LABEL}",
       "Exe": "ruby",
-      "Home": "$("${local:URU_HOME}\ruby\bin" -replace '\\', '\\')",
+      "Home": "$("${local:SERVERSPEC_HOME}\ruby\bin" -replace '\\', '\\')",
       "GemHome": "",
       "Description": "ruby $RUBY_VERSION_LONG (2015-08-18 revision 51632) [x64-mingw32]"
     }
@@ -78,4 +79,4 @@ popd
 $report = get-content -path "${RESULTS_PATH}\result.json" | convertfrom-json
 write-output ($report.'summary_line')
 
-$local:URU_HOME = $null
+$local:SERVERSPEC_HOME = $null
