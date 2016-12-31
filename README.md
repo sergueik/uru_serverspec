@@ -1,16 +1,44 @@
 ## Uru Serverspec
 
-### Introduction. Execution
+### Introduction
 
-One can bootstrap a standalone ruby environment to run [serverspec](http://serverspec.org/resource_types.html) and generate HTML, XML and json rspec reports.
-with the help of [uru](https://bitbucket.org/jonforums/uru/wiki/Usage) on an internet-blocked Windows or Linux instance (uru is not the only option for Linux).
+There is a challenge to run [serverspec](http://serverspec.org/resource_types.html) on the instance that has
+Enterprise SSO / access management software provisioned.
+On Unix system an example of such softweare is  [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
+and on Windows, there are multiple vendors / authentication schemes, e.g.
+[2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
+By design such software renders ssh and winrm key-based remote access impossible.
 
-Assuming uru module is added to control repository role / profile, the serverspec run would be triggered locally on the instance by Puppet to verify the 'production' modules.
+One can actually bootstrap a standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
+Linux or Windows, with the help of [uru](https://bitbucket.org/jonforums/uru/downloads).
 
-It is no longer necessary to launch throgh Vagrantfile, though it is still possible - Puppet is likely to skip serverspec from running during incremental runs.
+On Unix, there certainly are alternatives, but on Windows, rvm-like tools are scarcely available.
+The only alternative found was [pik](https://github.com/vertiginous/pik), and it is not maintained since 2012.
+Installing [Cygwin](https://www.cygwin.com/) on a Windows instance
+just to enable one to [run rvm](http://blog.developwithpassion.com/2012/03/30/installing-rvm-with-cygwin-on-windows/)
+feels like an overkill.
+
+To run serverspec at the end of proviion, It is no longer necessary, though still possible to update the Vagrantfile.
+
+A possible alternative is to add the __uru\_serverspec__ module
+to control repository role / through a __test__  profile stage, which will cause  Puppet to verify the 'production' modules
+declared in the __main__ stage.
+
+The module __uru\_serverspec__ is designed to execute `rake spec` with the serverspec files during every provision run.
+
+This is different from the regular Puppet module, and therefore the full Puppet run will not be idempotent,
+but this reflects the module purpose.
+
+When moving to production, this behavior can be suppressed through module parameters.
+Alternatively,
+the __test__ stage where the module is declared, can be disabled,
+or the class simply can be managed through [hiera_include](https://docs.puppet.com/hiera/3.2/puppet.html#assigning-classes-to-nodes-with-hiera-hierainclude) to not bepresent in production environment.
+
+On the other hand, exactly because the module ability of being __not__ idempotent, one can use __uru\_serverspec__ for the same tasks the
+[Chef Inspec](https://github.com/chef/inspec) is used today.
 
 To continue running serverspec through [vagrant-serverspec](https://github.com/jvoorhis/vagrant-serverspec)
-plugin, one would have to modify the `Vagrantfile` to include the new location of the `rspec` files inside the module `files`
+plugin, one would have to update the path of the `rspec` files in the `Vagrantfile` pointing it to inside the module `files`
 e.g. assuming that serverspec are platform-specific, and the mapping between instance's Vagrant `config.vm.box` and the `arch` is defined elsewhere:
 
 ```ruby
@@ -23,7 +51,8 @@ config.vm.provision :serverspec do |spec|
   end
 end
 ```
-The `uru` module can collect serverspec resources from other modules's via `puppet:///modules` URI and the Puppet [file](https://docs.puppet.com/puppet/latest/reference/type.html#file-attribute-sourceselect) resource:
+The __uru\_serverspec__ module can collect serverspec resources from other modules's via Puppet's `puppet:///modules` URI and
+the Puppet [file](https://docs.puppet.com/puppet/latest/reference/type.html#file-attribute-sourceselect) resource:
 ```puppet
 file {'spec/local':
   ensure              => directory,
@@ -48,10 +77,17 @@ file {'spec/local':
 ```
 
 This mechanism relies on Puppet [file type](https://github.com/puppetlabs/puppet/blob/cdf9df8a2ab50bfef77f1f9c6b5ca2dfa40f65f7/lib/puppet/type/file.rb)
-and its 'sourceselect'  attribute. No equivalent mechanism is implemented with Chef yet.
+and its 'sourceselect'  attribute.
+Regrettably no similar URI for roles: `puppet:///modules/roles/serverspec/${role}` exists in Puppet,
+though logically the serverspec are logically more appropriate to associate with
+roles, than profiles.
+
+No equivalent mechanism of scanning the cookbooks is implemented with Chef yet.
 
 ### Internals
-One could provision Uru environment from a zip/tar archive, one can also construct a Puppet module for the same. This is a lightweight alternative to [DracoBlue/puppet-rvm](https://github.com/dracoblue/puppet-rvm) module, which is likely need to build Ruby from source anyway.
+One could provision __uru\_serverspec__ environment from a zip/tar archive, one can also construct a Puppet module for the same.
+This is a lightweight alternative to [DracoBlue/puppet-rvm](https://github.com/dracoblue/puppet-rvm) module,
+which is likely need to build Ruby from source anyway.
 
 The `$URU_HOME` home directory with Ruby runtime plus a handful of gems has the following structure:
 ![uru folder](https://raw.githubusercontent.com/sergueik/uru_serverspec/master/screenshots/uru-centos.png)
@@ -65,8 +101,9 @@ rspec_junit_formatter
 serverspec
 ```
 ### Setup
-For windows, `uru.zip` can be created by copying `uru` and [Ruby] runtime installed from an [MSI](http://rubyinstaller.org/downloads/) on a instance with internet access, for example, on a developer host, the `$URU_HOME` folder
-and install all dependency gems from a sandbox Ruby instance:
+For windows, `uru.zip` can be created by doing a fresh install of [uru](https://bitbucket.org/jonforums/uru/wiki/Usage) and binary install of
+[Ruby](http://rubyinstaller.org/downloads/) performed on a node with internet access or on a developer host,
+and installing all dependency gems from a sandbox Ruby instance into the `$URU_HOME` folder:
 ```powershell
 uru_rt.exe admin add ruby\bin
 uru_rx.exe gem install --no-rdoc --no-ri serverspec rspec rake json rspec_junit_formatter
@@ -96,7 +133,7 @@ pushd $URU_HOME
 wget https://bitbucket.org/jonforums/uru/downloads/uru-${URU_VERSION}-linux-x86.tar.gz
 tar xzvf uru-${URU_VERSION}-linux-x86.tar.gz
 ```
-After Ruby and uru is installed one switches to the isolated environment
+After Ruby and__uru__is installed one switches to the isolated environment
 and installs the required gem dependencies
 ```bash
 ./uru_rt admin add ruby/bin
@@ -176,7 +213,8 @@ with a formatting option added:
 ```ruby
 t.rspec_opts = "--format documentation --format html --out reports/report_#{$host}.html --format json --out reports/report_#{$host}.json"
 ```
-This would enforce verbose formatting of rspec result [logging](http://stackoverflow.com/questions/8785358/how-to-have-junitformatter-output-for-rspec-run-using-rake).
+This would enforce verbose formatting of rspec result [logging](http://stackoverflow.com/questions/8785358/how-to-have-junitformatter-output-for-rspec-run-using-rake) and let rspec generate standard HTML and json rspec reports.
+One can use to produce junit XML reports.
 
 The `spec/local` directory can contain arbitrary number of domain-specific spec files, as explained above.
 The `uru` module contains a basic serverspec file `uru_spec.rb` that serves as a smoke test of the `uru` environment:
@@ -471,7 +509,7 @@ This will assign a hard coded user name versus target instance environment value
 Note:  `ENV['HOME']` was not used - it is defined in both cygwin (`C:\cygwin\home\vagrant`)
 and Windows environments (`C:\users\vagrant`)
 
-#### To detect URU runtime:
+#### To detect__uru__runtime:
 ```ruby
 context 'URU_INVOKER environment variable', :if => ENV.has_key?('URU_INVOKER')  do
   describe command(<<-EOF
