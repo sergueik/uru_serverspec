@@ -80,3 +80,55 @@ $report = get-content -path "${RESULTS_PATH}\result.json" | convertfrom-json
 write-output ($report.'summary_line')
 
 $local:SERVERSPEC_HOME = $null
+
+
+
+<#
+
+
+$GEM_VERSION = '2.3.0'
+$RAKE_VERSION = '10.4.2'
+$RUBY_VERSION = '2.3.3'
+$RUBY_VERSION_LONG = '2.3.3p222'
+
+ruby 2.3.3p222 (2016-11-21 revision 56859) [i386-mingw32]
+
+
+*** LOCAL GEMS ***
+
+activesupport (4.2.7.1)
+bigdecimal (1.2.8)
+did_you_mean (1.0.0)
+diff-lcs (1.2.5)
+i18n (0.7.0)
+io-console (0.4.5)
+jira-ruby (1.1.0)
+json (1.8.3)
+mini_portile2 (2.1.0)
+minitest (5.8.5)
+multi_json (1.12.1)
+net-scp (1.2.1)
+net-ssh (3.2.0)
+net-telnet (0.1.1)
+oauth (0.5.1)
+power_assert (0.2.6)
+psych (2.1.0)
+rake (10.4.2)
+rdoc (4.2.1)
+rspec (3.5.0)
+rspec-core (3.5.4)
+rspec-expectations (3.5.0)
+rspec-its (1.2.0)
+rspec-mocks (3.5.0)
+rspec-support (3.5.0)
+serverspec (2.37.2)
+sfl (2.3)
+slf4r (0.4.2)
+specinfra (2.66.2)
+test-unit (3.1.5)
+thread_safe (0.3.5)
+tzinfo (1.2.2)
+xml-simple (1.1.5)
+
+TODO: build gem native extension for nokogiri and openssl
+#>
