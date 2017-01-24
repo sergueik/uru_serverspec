@@ -3,26 +3,27 @@
 ### Introduction
 
 There is a challenge to run [serverspec](http://serverspec.org/resource_types.html) on the instance that has
-Enterprise SSO / access management software provisioned.
-On Unix system an example of such softweare is  [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
-and on Windows, there are multiple vendors / authentication schemes, e.g.
+Enterprise SSO / access management software provisioned to the role, for example [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
+on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
-By design such software renders ssh and winrm key-based remote access impossible.
+By design such software renders ssh and winrm ssh key-based remote access impossible.
 
-One can actually bootstrap a standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
-Linux or Windows, with the help of [uru](https://bitbucket.org/jonforums/uru/downloads).
+With the help of [uru](https://bitbucket.org/jonforums/uru/downloads) one can actually bootstrap a standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
+Linux or Windows.
 
 On Unix, there certainly are alternatives, but on Windows, rvm-like tools are scarcely available.
 The only alternative found was [pik](https://github.com/vertiginous/pik), and it is not maintained since 2012.
-Installing [Cygwin](https://www.cygwin.com/) on a Windows instance
+Also, installing a full [Cygwin](https://www.cygwin.com/) environment on a Windows instance
 just to enable one to [run rvm](http://blog.developwithpassion.com/2012/03/30/installing-rvm-with-cygwin-on-windows/)
 feels like an overkill.
 
-To run serverspec at the end of proviion, It is no longer necessary, though still possible to update the Vagrantfile.
+It is no longer necessary, though still possible to run serverspec at the end of provision, or run the same set of tests 
+locally or remotely - see the example below on how to update the Vagrantfile.
 
 A possible alternative is to add the __uru\_serverspec__ module
-to control repository role / through a __test__  profile stage, which will cause  Puppet to verify the 'production' modules
-declared in the __main__ stage.
+to control repository role / through a dedicated __test__  profile/stage, which will cause 
+Puppet to verify the modules and everything
+declared in the __main__ / 'production'  profile stage.
 
 The module __uru\_serverspec__ is designed to execute `rake spec` with the serverspec files during every provision run.
 
@@ -30,8 +31,7 @@ This is different from the regular Puppet module, and therefore the full Puppet 
 but this reflects the module purpose.
 
 When moving to production, this behavior can be suppressed through module parameters.
-Alternatively,
-the __test__ stage where the module is declared, can be disabled,
+Alternatively, the __test__ stage where the module is declared, can be disabled,
 or the class simply can be managed through [hiera_include](https://docs.puppet.com/hiera/3.2/puppet.html#assigning-classes-to-nodes-with-hiera-hierainclude) to not bepresent in production environment.
 
 On the other hand, exactly because the module ability of being __not__ idempotent, one can use __uru\_serverspec__ for the same tasks the
@@ -585,6 +585,8 @@ serverspec provisioner:
  * [filtering RSpec log](https://www.relishapp.com/rspec/rspec-core/docs/configuration/excluding-lines-from-the-backtrace)
  * [specialist](https://github.com/ustream/Specialist)
  * [vincentbernat/serverspec-example](https://github.com/vincentbernat/serverspec-example)
+ * [puppet/yamlfile](https://github.com/reidmv/puppet-module-yamlfile)
+ * [puppet/yaml_settings](https://forge.puppet.com/cataphract/yaml_settings)
  
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
