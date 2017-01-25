@@ -1,0 +1,10 @@
+---
+uru::parameters:
+  context1:
+    key: 'key1'
+    value: 'value1'
+    comment: 'comment1'
+  context2:
+    key: 'key2'
+    value: 'value2'
+    comment: 'comment2'

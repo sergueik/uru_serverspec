@@ -1,9 +1,9 @@
 # -*- mode: puppet -*-
 # vi: set ft=puppet :
 
-define custom_command::exec_uru(
+define exec_uru(
   $toolspath = 'c:\tools',
-  $version   = '0.4.0',
+  $version   = '0.5.0',
   $debug     = $false
  ) {
   validate_string($toolspath)
@@ -51,7 +51,7 @@ define custom_command::exec_uru(
   # to scan multiple paths per module, build array ourside of the file resource:
   # e.g.
   # $serverspec_directories = unique(flatten([$covered_modules.map |$item| { "${item}/serverspec/${osfamily_platform_directory}" }, $covered_modules.map |$item| { "${item}/serverspec/${::osfamily}" }]))
-  # May also need to provide a custom mount point through `fileserver.conf
+  # May also need to provide a custom mount point through fileserver.conf
   # https://docs.puppet.com/puppet/latest/reference/file_serving.html
   # to enable globbing serverspec files by role/ profile
   # [<NAME OF MOUNT POINT>]
@@ -65,7 +65,21 @@ define custom_command::exec_uru(
     source_permissions => ignore,
     sourceselect       => all,
   }
-
+  $default_attributes = {
+    target  => "${toolspath}/spec/config/parameters.yaml",
+    require => File["${toolspath}/spec/multiple"],
+  }
+  
+  $parameters = hiera_hash('uru::parameters')
+  $parameters.each |$key, $values| {
+    create_resources('yaml_setting',
+      {
+        $key => delete($values, ['comment'])
+      }, 
+      $default_attributes
+    )
+  }
+  
   file { "${name} windows_spec_helper.rb":
     ensure             => file,
     path               => "${toolspath}/spec/windows_spec_helper.rb",

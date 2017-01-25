@@ -1,0 +1,10 @@
+---
+:hierarchy:
+- osfamily/%{::osfamily}
+- common
+
+:yaml:
+  :datadir: '/vagrant/data'
+
+:backends:
+  - yaml

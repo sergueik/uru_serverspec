@@ -1,0 +1,2 @@
+mod 'reidmv/yamlfile', '0.2.0'
+mod 'puppet/filemapper', '2.0.1'

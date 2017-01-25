@@ -17,11 +17,11 @@ Also, installing a full [Cygwin](https://www.cygwin.com/) environment on a Windo
 just to enable one to [run rvm](http://blog.developwithpassion.com/2012/03/30/installing-rvm-with-cygwin-on-windows/)
 feels like an overkill.
 
-It is no longer necessary, though still possible to run serverspec at the end of provision, or run the same set of tests 
+It is no longer necessary, though still possible to run serverspec at the end of provision, or run the same set of tests
 locally or remotely - see the example below on how to update the Vagrantfile.
 
 A possible alternative is to add the __uru\_serverspec__ module
-to control repository role / through a dedicated __test__  profile/stage, which will cause 
+to control repository role / through a dedicated __test__  profile/stage, which will cause
 Puppet to verify the modules and everything
 declared in the __main__ / 'production'  profile stage.
 
@@ -564,6 +564,67 @@ context 'Custom Type' do
   end
 end
 ```
+
+### Parameters
+
+To pass parameters to the serverspec use [hieradata](https://docs.puppet.com/hiera/3.2/puppet.html)
+```yaml
+---
+uru::parameters:
+  context1:
+    key: 'key1'
+    value: 'value1'
+    comment: 'comment1'
+  context2:
+    key: 'key2'
+    value: 'value2'
+    comment: 'comment2'
+```
+The processing of the hiera is implemented in standard way:
+
+```ruby
+  $default_attributes = {
+    target  => "${toolspath}/spec/config/parameters.yaml",
+    require => File["${toolspath}/spec/multiple"],
+  }
+
+  $parameters = hiera_hash('uru::parameters')
+  $parameters.each |$key, $values| {
+    create_resources('yaml_setting',
+      {
+        $key => delete($values, ['comment'])
+      },
+      $default_attributes
+    )
+  }
+
+```
+This will produce the following `spec/config/parameters.yaml`:
+```yaml
+---
+key1: 'value1'
+key2: 'value2'
+
+```
+The unique `context*` keys disappear - they exist for Puppet `create_resources` needs only.
+The optional `comment` key is ignored.
+
+The following fragment demonstrates the use `spec/config/parameters.yaml` in serverspec:
+
+```ruby
+if ENV.has_key?('URU_INVOKER')
+  parameters = YAML.load_file(File.join(__dir__, '../config/parameters.yaml'))
+  value1 = parameters['key1']
+end
+```
+Note: the Rspec metadata
+
+```ruby
+context 'Uru-only context', :if => ENV.has_key?('URU_INVOKER') do
+end
+```
+should not be used for this case - it will not isolate the execution of uru-only context.
+
 ### Note
 The RSpec `format` [options](https://relishapp.com/rspec/rspec-core/docs/command-line/format-option) provided in the `Rakefile`
 ```ruby
@@ -575,6 +636,8 @@ The
 serverspec provisioner:
 * The following settings shouldn't exist: rspec_opts
 ```
+
+
 ### See Also
 
  * [cucumberjs-junitxml](https://github.com/sonyschan/cucumberjs-junitxml)
@@ -587,6 +650,6 @@ serverspec provisioner:
  * [vincentbernat/serverspec-example](https://github.com/vincentbernat/serverspec-example)
  * [puppet/yamlfile](https://github.com/reidmv/puppet-module-yamlfile)
  * [puppet/yaml_settings](https://forge.puppet.com/cataphract/yaml_settings)
- 
+
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
