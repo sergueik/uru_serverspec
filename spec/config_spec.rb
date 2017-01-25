@@ -1,6 +1,10 @@
 if File.exists?( 'spec/windows_spec_helper.rb')
   require_relative '../windows_spec_helper'
 end
+require 'yaml'
+require 'json'
+require 'csv'
+
 context 'Configuration',:if => ENV.has_key?('URU_INVOKER')  do
   context 'Find the file' do
     describe file("#{uru_home}/spec/config/config.yaml") do
@@ -13,32 +17,40 @@ context 'Configuration',:if => ENV.has_key?('URU_INVOKER')  do
       end
     end
   end
-  context 'Confirm it is a  valid Yaml', :if => ENV.has_key?('URU_INVOKER')  do
-    require 'yaml'
-    require 'json'
-    require 'csv'
+
+  context 'Confirm it is a valid YAML', :if => ENV.has_key?('URU_INVOKER') do
     load_status = nil
     filename ="#{uru_home}/spec/config/config.yaml"
     describe command("get-content -LiteralPath '#{filename}' -Encoding ASCII") do
-      its(:exit_status) { should eq 0 } 
+      {
+        'key1' => 'value1',
+        'key2' => 'value2',
+      }.each do |key, value|
+        its(:stdout) { should contain /#{key}: #{value}/}
+      end
     end
+    command_result = Specinfra::Runner::run_command( <<-EOF
+      get-content -LiteralPath '#{filename}' -Encoding ASCII
+    EOF
+    ).stdout.gsub(/\r/,'')
+    puts 'Command output: ' + command_result
+    # NOTE: this is failing
     begin
-      command_result = Specinfra::Runner::run_command( <<-EOF
-        get-content -LiteralPath '#{filename}' -Encoding ASCII
-      EOF
-      )
-      STDERR.puts command_result.stdout
-      YAML.load(command_result.stdout)
+      YAML.load(command_result)
       load_status = true
     rescue => e
+      puts 'Exceptions: ' + e.to_s
       load_status = false
     end
+    puts 'load status: ' + load_status.to_s
     describe(load_status) do
       it { should be true }
     end
   end
-  context 'Confirm able to load ', :if => ENV.has_key?('URU_INVOKER')  do
-    parameters = YAML.load_file(File.join(__dir__, '../config/config.yaml'))
-    parameter = parameters['key1']
+  context 'Confirm able to load ' do
+    if ENV.has_key?('URU_INVOKER')
+      parameters = YAML.load_file(File.join(__dir__, '../config/config.yaml'))
+      parameter = parameters['key1']
+    end
   end
 end
