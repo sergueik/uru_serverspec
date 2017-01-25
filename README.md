@@ -75,12 +75,33 @@ file {'spec/local':
   sourceselect       => all,
 }
 ```
-
 This mechanism relies on Puppet [file type](https://github.com/puppetlabs/puppet/blob/cdf9df8a2ab50bfef77f1f9c6b5ca2dfa40f65f7/lib/puppet/type/file.rb)
 and its 'sourceselect'  attribute.
 Regrettably no similar URI for roles: `puppet:///modules/roles/serverspec/${role}` exists in Puppet,
 though logically the serverspec are logically more appropriate to associate with
 roles, than profiles.
+One can combine the two in place:
+```ruby
+  if ($profile_serverspec =~ /\w+/) {
+    $profile_serverspec_check = true
+  } else {
+    $profile_serverspec_check = false
+  }
+  ...
+  #lint:ignore:selector_inside_resource
+
+  source             => $server_role_check ? {
+  true    => "puppet:///modules/profile/serverspec/roles/${profile_serverspec}",
+   default => $modules_serverspec.map |$item| { "puppet:///modules/${item}" },
+  },
+  #lint:endignore
+
+```
+and also one can  combine the narrow platform-specific tests and tests common to different platform releases separately to reduce the redundancy like below:
+```ruby
+$serverspec_directories =  unique(flatten([$::testing_framework::covered_modules.map |$module_name| { "${module_name}/serverspec/${osfamily_platform}" }, $::testing_framework::covered_modules.map |$module_name| { "${module_name}/serverspec/${::osfamily}" }]))
+
+``
 
 No equivalent mechanism of scanning the cookbooks is implemented with Chef yet.
 
