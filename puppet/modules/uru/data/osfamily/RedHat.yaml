@@ -1,10 +1,10 @@
 ---
 uru::parameters:
   context1:
-    key: 'key1'
-    value: 'value1'
-    comment: 'comment1'
+    key: 'key'
+    value: 'value'
+    comment: 'comment'
   context2:
-    key: 'key2'
-    value: 'value2'
-    comment: 'comment2'
+    key: 'key1/key2/key3'
+    value: 'value'
+    comment: 'use yamlfile syntax for nested keys'

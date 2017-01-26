@@ -1,10 +1,15 @@
 ---
 uru::parameters:
-  context1:
+  dummy1:
     key: 'key1'
     value: 'value1'
-    comment: 'comment1'
-  context2:
+    comment: 'comment'
+  dummy2:
     key: 'key2'
-    value: 'value2'
-    comment: 'comment2'
+    value:
+    - 'value2'
+    - 'value3'
+    - 'value4'
+  dummy3:
+    key: 'key3/key4'
+    value: 'value5'
