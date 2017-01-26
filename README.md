@@ -14,24 +14,23 @@ Linux or Windows.
 On Unix, there certainly are alternatives, but on Windows, rvm-like tools are scarcely available.
 The only alternative found was [pik](https://github.com/vertiginous/pik), and it is not maintained since 2012.
 Also, installing a full [Cygwin](https://www.cygwin.com/) environment on a Windows instance
-just to enable one to [run rvm](http://blog.developwithpassion.com/2012/03/30/installing-rvm-with-cygwin-on-windows/)
+just to enable one to run [rvm](http://blog.developwithpassion.com/2012/03/30/installing-rvm-with-cygwin-on-windows/)
 feels like an overkill.
 
-It is no longer necessary, though still possible to run serverspec at the end of provision, or run the same set of tests
-locally or remotely - see the example below on how to update the Vagrantfile.
+It is no longer necessary, though still possible to run serverspec at the end of provision.
+To run the same set of tests locally on the insance in uru environment and remotely on the developer host in
+[Vagrant serverspec](https://github.com/jvoorhis/vagrant-serverspec) plugin - see the example below on how to update the Vagrantfile.
 
 A possible alternative is to add the __uru\_serverspec__ module
-to control repository role / through a dedicated __test__  profile/stage, which will cause
-Puppet to verify the modules and everything
-declared in the __main__ / 'production'  profile stage.
+to control repository role / through a dedicated 'test' profile (stage), which will cause Puppet to verify the modules and everything declared in the 'production'  profile (stage).
 
-The module __uru\_serverspec__ is designed to execute `rake spec` with the serverspec files during every provision run.
+The module __uru\_serverspec__ can be configured to execute `rake spec` with the serverspec files during every provision run (the default) or only when changes are detected in the ruby file or hiera configuration.
 
 This is different from the regular Puppet module, and therefore the full Puppet run will not be idempotent,
 but this reflects the module purpose.
 
 When moving to production, this behavior can be suppressed through module parameters.
-Alternatively, the __test__ stage where the module is declared, can be disabled,
+Alternatively, the 'test' stage where the module is declared, can be disabled,
 or the class simply can be managed through [hiera_include](https://docs.puppet.com/hiera/3.2/puppet.html#assigning-classes-to-nodes-with-hiera-hierainclude) to not bepresent in production environment.
 
 On the other hand, exactly because the module ability of being __not__ idempotent, one can use __uru\_serverspec__ for the same tasks the
@@ -39,7 +38,8 @@ On the other hand, exactly because the module ability of being __not__ idempoten
 
 To continue running serverspec through [vagrant-serverspec](https://github.com/jvoorhis/vagrant-serverspec)
 plugin, one would have to update the path of the `rspec` files in the `Vagrantfile` pointing it to inside the module `files`
-e.g. assuming that serverspec are platform-specific, and the mapping between instance's Vagrant `config.vm.box` and the `arch` is defined elsewhere:
+e.g. since serverspec are strongly platform-specific, use the instance's Vagrant `config.vm.box` or the `arch`
+(defined elsewhere) to choose the correct spec file for the instance:
 
 ```ruby
 arch = config.vm.box || 'linux'
@@ -75,22 +75,22 @@ file {'spec/local':
   sourceselect       => all,
 }
 ```
+
 This mechanism relies on Puppet [file type](https://github.com/puppetlabs/puppet/blob/cdf9df8a2ab50bfef77f1f9c6b5ca2dfa40f65f7/lib/puppet/type/file.rb)
 and its 'sourceselect'  attribute.
-Regrettably no similar URI for roles: `puppet:///modules/roles/serverspec/${role}` exists in Puppet,
-though logically the serverspec are logically more appropriate to associate with
-roles, than profiles.
-One can combine the two in place:
+Regrettably no similar URI for roles: `puppet:///modules/roles/serverspec/${role}` can be constructed,
+though logically the serverspec are more appropriate to define per-role, than per-profile.
+
+One can combine the two globs in one attribute definition:
 ```ruby
   if ($profile_serverspec =~ /\w+/) {
-    $profile_serverspec_check = true
+    $use_profile = true
   } else {
-    $profile_serverspec_check = false
+    $use_profile = false
   }
   ...
   #lint:ignore:selector_inside_resource
-
-  source             => $server_role_check ? {
+  source => $use_profile ? {
   true    => "puppet:///modules/profile/serverspec/roles/${profile_serverspec}",
    default => $modules_serverspec.map |$item| { "puppet:///modules/${item}" },
   },
@@ -590,16 +590,21 @@ To pass parameters to the serverspec use [hieradata](https://docs.puppet.com/hie
 ```yaml
 ---
 uru::parameters:
-  context1:
+  dummy1:
     key: 'key1'
     value: 'value1'
-    comment: 'comment1'
-  context2:
+    comment: 'comment'
+  dummy2:
     key: 'key2'
-    value: 'value2'
-    comment: 'comment2'
+    value:
+    - 'value2'
+    - 'value3'
+    - 'value4'
+  dummy3:
+    key: 'key3/key4'
+    value: 'value5'
 ```
-The processing of the hiera is implemented in standard way:
+The processing of the hieradata is implemented in the standard way:
 
 ```ruby
   $default_attributes = {
@@ -618,15 +623,19 @@ The processing of the hiera is implemented in standard way:
   }
 
 ```
-This will produce the following `spec/config/parameters.yaml`:
+This will produce the file `/uru/spec/config/parameters.yaml` on the instance with the following contents:
 ```yaml
 ---
 key1: 'value1'
-key2: 'value2'
-
+key2:
+- 'value2'
+- 'value3'
+- 'value4'
+key3:
+  key4: 'value5'
 ```
-The unique `context*` keys disappear - they exist for Puppet `create_resources` needs only.
-The optional `comment` key is ignored.
+The unique `dummy*` keys from `hieradata/common.yaml` disappear - they exist for Puppet `create_resources` needs only.
+The optional `comment` key is ignored. Note usage of [yamlfile](https://github.com/reidmv/puppet-module-yamlfile) Puppet module syntax for nested keys.
 
 The following fragment demonstrates the use `spec/config/parameters.yaml` in serverspec:
 
@@ -636,13 +645,15 @@ if ENV.has_key?('URU_INVOKER')
   value1 = parameters['key1']
 end
 ```
-Note: the Rspec metadata
+Note: the Rspec metadata-derived [serverspec syntax](http://serverspec.org/advanced_tips.html)
 
 ```ruby
-context 'Uru-only context', :if => ENV.has_key?('URU_INVOKER') do
+context 'Uru-specific context', :if => ENV.has_key?('URU_INVOKER') do
+  # uru-specific code
 end
 ```
-should not be used for this case - it will not isolate the execution of uru-only context.
+does not block `YAML.load_file` execution outside of uru-specific context and not to be used for this case -
+a plain Ruby conditon will do.
 
 ### Note
 The RSpec `format` [options](https://relishapp.com/rspec/rspec-core/docs/command-line/format-option) provided in the `Rakefile`
