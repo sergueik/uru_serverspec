@@ -95,13 +95,11 @@ One can combine the two in place:
    default => $modules_serverspec.map |$item| { "puppet:///modules/${item}" },
   },
   #lint:endignore
-
 ```
 and also one can  combine the narrow platform-specific tests and tests common to different platform releases separately to reduce the redundancy like below:
 ```ruby
 $serverspec_directories =  unique(flatten([$::testing_framework::covered_modules.map |$module_name| { "${module_name}/serverspec/${osfamily_platform}" }, $::testing_framework::covered_modules.map |$module_name| { "${module_name}/serverspec/${::osfamily}" }]))
-
-``
+```
 
 No equivalent mechanism of scanning the cookbooks is implemented with Chef yet.
 
