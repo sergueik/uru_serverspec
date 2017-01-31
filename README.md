@@ -58,7 +58,7 @@ file {'spec/local':
   ensure              => directory,
   path                => "${tool_root}/spec/local",
   recurse             => true,
-  source              => $modules.map |$name| {"puppet:///modules/${name}/serverspec/${::osfamily}"},
+  source              => $::uru_serverspec::covered_modules.map |$name| {"puppet:///modules/${name}/serverspec/${::osfamily}"},
   source_permissions => ignore,
   sourceselect        => all,
 }
@@ -70,7 +70,7 @@ file {'spec/local':
   ensure              => directory,
   path                => "${tool_root}/spec/local",
   recurse             => true,
-  source              => $server_roles.map |$server_role| {"puppet:///modules/profile//serverspec/roles/${server_role}" },
+  source              => $::uru_serverspec::server_roles.map |$server_role| {"puppet:///modules/profile//serverspec/roles/${server_role}" },
   source_permissions => ignore,
   sourceselect       => all,
 }
@@ -92,16 +92,30 @@ One can combine the two globs in one attribute definition:
   #lint:ignore:selector_inside_resource
   source => $use_profile ? {
   true    => "puppet:///modules/profile/serverspec/roles/${profile_serverspec}",
-   default => $modules_serverspec.map |$item| { "puppet:///modules/${item}" },
+   default => $::uru_serverspec::covered_modules.map |$item| { "puppet:///modules/${item}" },
   },
   #lint:endignore
 ```
 and also one can  combine the narrow platform-specific tests and tests common to different platform releases separately to reduce the redundancy like below:
 ```ruby
-$serverspec_directories =  unique(flatten([$::testing_framework::covered_modules.map |$module_name| { "${module_name}/serverspec/${osfamily_platform}" }, $::testing_framework::covered_modules.map |$module_name| { "${module_name}/serverspec/${::osfamily}" }]))
+$serverspec_directories =  unique(flatten([$::uru_serverspec::covered_modules.map |$module_name| { "${module_name}/serverspec/${osfamily_platform}" }, $::testing_framework::covered_modules.map |$module_name| { "${module_name}/serverspec/${::osfamily}" }]))
 ```
 
-No equivalent mechanism of scanning the cookbooks is implemented with Chef yet.
+Then it does the same with types
+```ruby
+  # Populate the type directory with custom types from all covered modules
+  file { 'spec/type':
+    ensure             => directory,
+    path               => "${tool_root}/spec/type",
+    recurse            => true,
+    source             => $::uru_serverspec::covered_modules.map |$module_name| { "puppet:///modules/${module_name}/serverspec/type" },
+    source_permissions => ignore,
+    sourceselect       => all,
+  }
+```
+No equivalent mechanism of scanning the cookbooks is implemented with Chef yet AFAIK.
+
+
 
 ### Internals
 One could provision __uru\_serverspec__ environment from a zip/tar archive, one can also construct a Puppet module for the same.
