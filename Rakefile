@@ -6,7 +6,7 @@ task :default => :spec
 
 namespace :spec do
   targets = []
-  Dir.glob('./spec/*').delete_if { |x| x=~ /.\/spec\/type/ }.each do |dir|
+  Dir.glob('./spec/*').reject { |x| x=~ /.\/spec\/(?:type|config)/ }.each do |dir|
     next unless File.directory?(dir)
     target = File.basename(dir)
     target = "_#{target}" if target == 'default'
