@@ -12,13 +12,24 @@ def contents(file)
   command("get-content #{file} -Encoding ASCII").stdout
 end
 
-context 'Read the file contents with command (e.g. remotely)' do
+context 'Read the file contents from command STDOUT (e.g. remotely)' do
   {
     'key1' => 'value1',
     'key2' => 'value2',  # replace with an invalid value to see the output
   }.each do |key, value|
     it do
       expect(contents(config_file)).to match /#{key}: #{value}/
+    end
+  end
+end
+
+context 'Read the file contents from command STDOUT, alt.syntax' do
+  describe command("get-content -LiteralPath '#{config_file}' -Encoding ASCII") do
+    {
+      'key1' => 'value1',
+      'key2' => 'value2',
+    }.each do |key, value|
+      its(:stdout) { should contain /#{key}: #{value}/}
     end
   end
 end
@@ -52,13 +63,15 @@ end
 # NOTE: this does not work
 context 'Confirm valid YAML', :if => ENV.has_key?('URU_INVOKER') do
   data = nil
-  parameters = {} 
+  parameters = {}
   begin
     data = contents(config_file)
     STDERR.puts data
   rescue => e
-    STDERR.puts e.to_s 
+    STDERR.puts e.to_s
     # undefined method `metadata' for nil:NilClass
+    # C:/uru/ruby/lib/ruby/gems/2.3.0/gems/specinfra-2.66.2/lib/specinfra/backend/cmd.rb
+    # architecture = @example.metadata[:architecture] || get_config(:architecture)
     # see https://github.com/sergueik/puppetmaster_vagrant/blob/master/spec/type/command.rb for solution
   end
   if data
@@ -69,35 +82,5 @@ context 'Confirm valid YAML', :if => ENV.has_key?('URU_INVOKER') do
   end
   it do
     expect(parameters['key1']).to eq('value1')
-  end
-end
-
-# NOTE: this does not work
-  context 'Confirm it is a valid YAML', :if => ENV.has_key?('URU_INVOKER') do
-    load_status = nil
-    describe command("get-content -LiteralPath '#{config_file}' -Encoding ASCII") do
-      {
-        'key1' => 'value1',
-        'key2' => 'value2',
-      }.each do |key, value|
-      its(:stdout) { should contain /#{key}: #{value}/}
-    end
-  end
-  command_result = Specinfra::Runner::run_command( <<-EOF
-    get-content -LiteralPath '#{config_file}' -Encoding ASCII
-  EOF
-  ).stdout.gsub(/\r/,'')
-  puts 'Command output: ' + command_result
-  # NOTE: this is failing
-  begin
-    YAML.load(command_result)
-    load_status = true
-  rescue => e
-    puts 'Exceptions: ' + e.to_s
-    load_status = false
-  end
-  puts 'load status: ' + load_status.to_s
-  describe(load_status) do
-    it { should be true }
   end
 end
