@@ -5,6 +5,9 @@ require 'yaml'
 require 'json'
 require 'csv'
 
+uru_home = 'c:/uru'
+user_home = ENV.has_key?('VAGRANT_EXECUTABLE') ? 'c:/users/vagrant' : ( 'c:/users/' + ENV['USER'] )
+
 context 'Configuration',:if => ENV.has_key?('URU_INVOKER')  do
   context 'Find the file' do
     describe file("#{uru_home}/spec/config/config.yaml") do
@@ -14,6 +17,20 @@ context 'Configuration',:if => ENV.has_key?('URU_INVOKER')  do
         'key2' => 'value2',
       }.each do |key, value|
         it { should contain /#{key}: #{value}/}
+      end
+    end
+  end
+
+  context 'Read the file contents with command' do
+    def contents(file)
+      command("get-content #{file}").stdout
+    end
+    {
+      'key1' => 'value1',
+      'key2' => 'value2',
+      }.each do |key, value|
+      it do
+        expect(contents("#{uru_home}/spec/config/config.yaml")).to match /#{key}: #{value}/
       end
     end
   end
