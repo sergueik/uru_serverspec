@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata>
+    <id><%= data[:name] %></id>
+    <title><%= data[:name].capitalize %> Ruby Version Manager</title>
+    <version><%= data[:ver] %></version>
+    <authors><%= data[:authors].join(',') %></authors>
+    <owners><%= data[:owners].join(',') %></owners>
+    <summary>
+      <%= data[:name].capitalize %> - A lightweight, multi-platform Ruby version manager - <%= data[:prg_url] %><%= data[:name] %>
+    </summary>
+    <description>
+      <%= data[:name].capitalize %> is a lightweight, multi-platform command line tool that helps you use the multiple rubies (currently MRI, JRuby, and Rubinius) on your 32/64-bit Linux, OS X, or Windows systems.
+    </description>
+    <projectUrl><%= data[:prg_url] %><%= data[:name] %></projectUrl>
+    <tags>Ruby ruby2 Version_Manager <%= data[:name] %></tags>
+    <licenseUrl><%= data[:prg_url] %><%= data[:name] %>/src/2f88e78f1e93d6e3739e5e725faffcad418db4b7/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+<% if data[:dependencies] && !data[:dependencies].empty? %>
+    <dependencies>
+      <% data[:dependencies].each_entry do |pkg,ver| %><%= %Q[<dependency id="#{pkg}" #{ver.nil? ? nil : 'version='+'"'+ver+'"'} />] %><% end %>
+    </dependencies>
+<% end %>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

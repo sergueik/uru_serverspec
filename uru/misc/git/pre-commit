@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Pre-commit git hook that requires all tracked *.go files to be properly
+# formatted as per gofmt rules before allowing a commit. Place this script
+# in the <REPO_ROOT>/.git/hooks dir and make executable. Works as-is with
+# msysGit installs on Windows.
+#
+# Based on the script from https://golang.org/misc/git/pre-commit
+
+gofiles=$(git diff --cached --name-only --diff-filter=ACM | grep '.go$')
+[ -z "$gofiles" ] && exit 0
+
+unformatted=$(gofmt -l $gofiles)
+[ -z "$unformatted" ] && exit 0
+
+# Some files are not formatted as per gofmt rules. Notify and fail.
+printf >&2 "\nFrom this repo's root dir, run the following to reformat your go files:\n"
+for fn in $unformatted; do
+  echo >&2 "  gofmt -w $fn"
+done
+
+exit 1
