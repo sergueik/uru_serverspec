@@ -694,6 +694,7 @@ serverspec provisioner:
  * [vincentbernat/serverspec-example](https://github.com/vincentbernat/serverspec-example)
  * [puppet/yamlfile](https://github.com/reidmv/puppet-module-yamlfile)
  * [puppet/yaml_settings](https://forge.puppet.com/cataphract/yaml_settings)
-
+ * [mruby](https://github.com/syucream/mruby) and [mruby-serverspec](https://github.com/syucream/mruby-serverspec)
+ 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
