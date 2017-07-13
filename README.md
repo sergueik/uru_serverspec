@@ -695,6 +695,9 @@ serverspec provisioner:
  * [puppet/yamlfile](https://github.com/reidmv/puppet-module-yamlfile)
  * [puppet/yaml_settings](https://forge.puppet.com/cataphract/yaml_settings)
  * [mruby](https://github.com/syucream/mruby) and [mruby-serverspec](https://github.com/syucream/mruby-serverspec)
+ * [cucumber-reporting](https://github.com/damianszczepanik/cucumber-reporting)
+ * [cucumber-html](https://github.com/cucumber/cucumber-html)
+ * [cucumber-reports](https://github.com/mkolisnyk/cucumber-reports)
  
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
