@@ -698,6 +698,7 @@ serverspec provisioner:
  * [cucumber-reporting](https://github.com/damianszczepanik/cucumber-reporting)
  * [cucumber-html](https://github.com/cucumber/cucumber-html)
  * [cucumber-reports](https://github.com/mkolisnyk/cucumber-reports)
+ * [octocatalog-diff - compares Puppet catalogs built from 2 runs](https://github.com/github/octocatalog-diff)
  
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
