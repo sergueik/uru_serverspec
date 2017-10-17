@@ -115,8 +115,6 @@ Then it does the same with types
 ```
 No equivalent mechanism of scanning the cookbooks is implemented with Chef yet AFAIK.
 
-
-
 ### Internals
 One could provision __uru\_serverspec__ environment from a zip/tar archive, one can also construct a Puppet module for the same.
 This is a lightweight alternative to [DracoBlue/puppet-rvm](https://github.com/dracoblue/puppet-rvm) module,
@@ -142,6 +140,21 @@ uru_rt.exe admin add ruby\bin
 uru_rx.exe gem install --no-rdoc --no-ri serverspec rspec rake json rspec_junit_formatter
 ```
 and zip the directory.
+
+NOTE: running __uru__ in a free Vmware instances provided by [Microsoft for IE/Edge testing](https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/),
+ona may need to add the [ffi.gem](https://rubygems.org/search?utf8=%E2%9C%93&query=ffi) which in turn may require installing [Ruby DeKit](https://rubyinstaller.org/add-ons/devkit.html) in the utu environment:
+
+```cmd
+cd c:\uru
+uru ls
+>> 218p440     : ruby 2.1.8p440 (2015-12-16 revision 53160) [i386-mingw32]
+uru.bat 218p440
+cd c:\devkit
+devkitvars.bat
+>> Adding the DevKit to PATH...
+cd c:\uru
+gem install %USERPROFILE%\Downloads\ffi-1.9.18.gem
+```
 
 On Linux, the tarball creation starts with compiling Ruby from source, configured with a prefix `${URU_HOME}/ruby`:
 ```bash
