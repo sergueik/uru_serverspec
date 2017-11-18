@@ -115,6 +115,31 @@ Then it does the same with types
 ```
 No equivalent mechanism of scanning the cookbooks is implemented with Chef yet AFAIK.
 
+### Providing Versions via Template 
+For extracting the versions one can utilize the following parameter
+
+```ruby
+ version_template => $::uru::version_template ? {
+  /\w+/   => $::uru::sut_role ? {
+    /\w+/   => $::uru::version_template,
+    default => ''   
+  },   
+  default => ''
+  }
+```
+
+template
+```ruby
+$sut_version = '<%= scope.lookupvar("sut_version") -%>'
+```
+and rspec conditional include:
+```ruby
+if File.exists?( 'spec/serverspec/versions.rb')  
+  require_relative 'versions.rb'
+  puts "defined #{$sut_version}"
+end
+```
+
 ### Internals
 One could provision __uru\_serverspec__ environment from a zip/tar archive, one can also construct a Puppet module for the same.
 This is a lightweight alternative to [DracoBlue/puppet-rvm](https://github.com/dracoblue/puppet-rvm) module,
