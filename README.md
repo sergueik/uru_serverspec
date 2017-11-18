@@ -128,13 +128,29 @@ For extracting the versions one can utilize the following parameter
   }
 ```
 
-template
+Puppet resource
 ```ruby
+
+  # Write the versions from caller provided template - only works for roles
+  if $version_template =~ /\w+/ {    
+    file { 'spec/local/versions.rb':
+      ensure             => file,
+      path               => "${tool_root}/spec/local/versions.rb",
+      content            => template($version_template),
+      source_permissions => ignore,
+      require            => [File['spec/local']],
+      before             => [File['runner']],
+    }  
+    }
+```
+
+template
+```ruby000
 $sut_version = '<%= scope.lookupvar("sut_version") -%>'
 ```
 and rspec conditional include:
 ```ruby
-if File.exists?( 'spec/serverspec/versions.rb')  
+if File.exists?( 'spec/local/versions.rb')  
   require_relative 'versions.rb'
   puts "defined #{$sut_version}"
 end
