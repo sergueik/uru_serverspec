@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # set -x
 # URU_HOME='<%= @uru_home -%>'
@@ -17,6 +17,12 @@ RUBY_VERSION='2.1.0'
 RUBY_VERSION_LONG='2.1.9p490'
 RUBY_TAG_LABEL='219p490'
 
+GEM_VERSION='2.3.0'
+RAKE_VERSION='10.4.2'
+RUBY_VERSION='2.3.6'
+RUBY_VERSION_LONG='2.3.6p384'
+RUBY_TAG_LABEL='236p384'
+
 URU_RUNNER=$URU_HOME/uru_rt
 
 pushd $URU_HOME
@@ -28,6 +34,7 @@ pushd $URU_HOME
 if [ -z $HOME ] ; then HOME='/root'; fi
 if [[ ! -d $HOME/.uru ]]; then mkdir "$HOME/.uru"; fi
 rm "$HOME/.uru/rubies.json"
+# for Ruby 2.1.0
 cat <<EOF>$HOME/.uru/rubies.json
 {
   "Version": "1.0.0",
@@ -39,6 +46,22 @@ cat <<EOF>$HOME/.uru/rubies.json
     "Home": "$URU_HOME/ruby/bin",
     "GemHome": "$URU_HOME/.gem/ruby/$GEM_VERSION",
     "Description": "ruby $RUBY_VERSION_LONG (2016-03-30 revision 54437) [x86_64-linux]"
+    }
+ }
+}
+EOF
+# for Ruby 2.3.6
+cat <<EOF>$HOME/.uru/rubies.json
+{
+  "Version": "1.0.0",
+  "Rubies": {
+  "2357568376": {
+    "ID": "$RUBY_VERSION_LONG",
+    "TagLabel": "$RUBY_TAG_LABEL",
+    "Exe": "ruby",
+    "Home": "$URU_HOME/ruby/bin",
+    "GemHome": "$URU_HOME/.gem/ruby/$GEM_VERSION",
+    "Description": "ruby $RUBY_VERSION_LONG (2017-12-14 revision 61254) [x86_64-linux]"
     }
  }
 }

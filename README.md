@@ -723,6 +723,51 @@ end
 does not block `YAML.load_file` execution outside of uru-specific context and not to be used for this case -
 a plain Ruby conditon will do.
 
+### Compiling from the source
+
+To compile uru package
+download ruby source from https://www.ruby-lang.org/en/downloads/, build and install Ruby into `/uru/ruby`:
+```shell
+pushd /uru/ruby-2.3.6 
+./configure --disable-install-capi --disable-install-rdoc --disable-install-doc --without-tk  --prefix=/uru/ruby
+```
+```shell
+make; make install
+```
+then register with __uru__ package
+```shell
+./uru_rt admin add /uru/ruby/bin
+---> Registered ruby at `/uru/ruby/bin` as `236p384`
+```
+and update the `runner.sh`
+
+e.g. for Ruby __2.3.6__ add
+
+```shell
+GEM_VERSION='2.3.0'
+RAKE_VERSION='10.4.2'
+RUBY_VERSION='2.3.6'
+RUBY_VERSION_LONG='2.3.6p384'
+RUBY_TAG_LABEL='236p384'
+```
+  
+and install the gems:
+```shell
+ ./uru_rt gem install --no-rdoc --no-ri specinfra serverspec rake rspec rspec_junit_formatter json nokogiri
+```
+Finally package the direcrory, and verify it works on vanila node:
+
+```shell
+cd /
+tar czvf ~sergueik/Downloads/uru_ruby_236.tar.gz /uru
+rm -rv -f uru/
+which ruby
+tar xzvf ~sergueik/Downloads/uru_ruby_236.tar.gz 
+pushd /uru/
+./runner.sh 
+# will report test passed
+```
+
 ### Note
 The RSpec `format` [options](https://relishapp.com/rspec/rspec-core/docs/command-line/format-option) provided in the `Rakefile`
 ```ruby
