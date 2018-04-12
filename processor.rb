@@ -8,7 +8,7 @@ require 'pp'
 
 options = {
   :maxcount   => 100,
-  :name       => 'result.json',
+  :name       => 'result_.json',
   :directory  => 'results',
   :serverspec => 'spec/local',
   :warnings   => false,
@@ -46,37 +46,46 @@ end
 
 results_path = "#{options[:directory]}/#{options[:name]}"
 puts 'Reading: ' + results_path
-results_obj = JSON.parse(File.read(results_path), symbolize_names: true)
+have_results = false
+begin
+  results_obj = JSON.parse(File.read(results_path), symbolize_names: true)
+  have_results = true
+rescue JSON::UnparserError => e
+  results_obj = { :summary_line => 'empty JSON file.' }
+end
 count = 1
+if have_results
 
-results_obj[:examples].each do |example|
-  if example[:status] !~ Regexp.new(ignore_statuses,Regexp::IGNORECASE)
-    full_description = example[:full_description]
-    if full_description =~ /\n/
-      short_description = (full_description.split(/\r?\n/).grep(/\S/))[0..1].join(' ')
-    else
-      short_description = full_description
+  results_obj[:examples].each do |example|
+    if example[:status] !~ Regexp.new(ignore_statuses,Regexp::IGNORECASE)
+      full_description = example[:full_description]
+      if full_description =~ /\n/
+        short_description = (full_description.split(/\r?\n/).grep(/\S/))[0..1].join(' ')
+      else
+        short_description = full_description
+      end
+      pp [example[:status],short_description]
+      count = count + 1
+      break if options[:maxcount] > 0 and count > options[:maxcount]
     end
-    pp [example[:status],short_description]
-    count = count + 1
-    break if options[:maxcount] > 0 and count > options[:maxcount]
+  end
+  # compute stats -
+  # NOTE: there is no outer context information in the `result.json`
+  stats = {}
+  results_obj[:examples].each do |example|
+    spec_path = example[:file_path]
+    unless stats.has_key?(spec_path)
+      stats[spec_path] = { :passed => 0, :failed => 0, :pending => 0 }
+    end
+    stats[spec_path][example[:status].to_sym] = stats[spec_path][example[:status].to_sym] + 1
+  end
+  puts 'Stats:'
+  stats.each do |spec_path,number_examples|
+    context = File.read(spec_path).scan(/context ['"].+['"] do\s*$/).first.gsub(/^\s*context\s+['"](.+)['"]\s+do\s*$/, '\1')
+    # not counting pending examples
+    puts spec_path.gsub(/^.+\//,'') + "\t" + (100.00 * number_examples[:passed] / (number_examples[:passed] + number_examples[:failed])).round(2).to_s + "%\t" + context
   end
 end
-# compute stats -
-# NOTE: there is no outer context information in the `result.json`
-stats = {}
-results_obj[:examples].each do |example|
-  spec_path = example[:file_path]
-  unless stats.has_key?(spec_path)
-    stats[spec_path] = { :passed => 0, :failed => 0, :pending => 0 }
-  end
-  stats[spec_path][example[:status].to_sym] = stats[spec_path][example[:status].to_sym] + 1
-end
-puts 'Stats:'
-stats.each do |spec_path,number_examples|
-  context = File.read(spec_path).scan(/context ['"].+['"] do\s*$/).first.gsub(/^\s*context\s+['"](.+)['"]\s+do\s*$/, '\1')
-  # not counting pending examples 
-  puts spec_path.gsub(/^.+\//,'') + "\t" + (100.00 * number_examples[:passed] / (number_examples[:passed] + number_examples[:failed])).round(2).to_s + "%\t" + context
-end
+
 puts 'Summary:'
 puts results_obj[:summary_line]
