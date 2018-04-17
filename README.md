@@ -905,6 +905,7 @@ ruby/lib/ruby/gems/2.1.0/gems/rdoc-4.1.0/
  * [cucumber-html](https://github.com/cucumber/cucumber-html)
  * [cucumber-reports](https://github.com/mkolisnyk/cucumber-reports)
  * [octocatalog-diff - compares Puppet catalogs built from 2 runs](https://github.com/github/octocatalog-diff)
-
+ * [Fake: Mocks and Stubs For the Command Line](https://github.com/roman-neuhauser/fake)
+ 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)

@@ -70,7 +70,7 @@ fi
 if [ ! -d ${MODULE_PATH}/java ]; then
   puppet module install 'puppetlabs-java' --version '1.3.0'
 fi
-# for encrypted 
+# for encrypted
 # gem install hiera-eyaml --no-rdoc --no-ri
 SCRIPT
 
@@ -106,17 +106,17 @@ Vagrant.configure('2') do |config|
       # NOTE: hiera arguments not set
       # config.vm.provision 'shell', inline: "puppet apply --modulepath=#{modulepath}:/vagrant/modules /vagrant/manifests/#{manifest}"
 
-       config.vm.provision :puppet do |puppet|
-          puppet.hiera_config_path = 'hiera.yaml'
-          puppet.module_path    = 'modules'
-          puppet.manifests_path = 'manifests'
-          puppet.manifest_file  = manifest
-          puppet.options        = "--verbose --modulepath #{modulepath}:/vagrant/modules "
-	  # hack to have hiera under Vagrant. des not seem to work
-          puppet.working_directory = '/tmp/vagrant-puppet'
-          config.vm.synced_folder 'hiera/', '/tmp/vagrant-puppet/hiera'
-          config.vm.synced_folder 'keys/', '/tmp/vagrant-puppet/keys'
-       end
+      config.vm.provision :puppet do |puppet|
+        puppet.hiera_config_path = 'hiera.yaml'
+        puppet.module_path    = 'modules'
+        puppet.manifests_path = 'manifests'
+        puppet.manifest_file  = manifest
+        puppet.options        = "--verbose --modulepath #{modulepath}:/vagrant/modules "
+        # hack to have hiera under Vagrant. does not seem to work
+        puppet.working_directory = '/tmp/vagrant-puppet'
+        config.vm.synced_folder 'hiera/', '/tmp/vagrant-puppet/hiera'
+        config.vm.synced_folder 'keys/', '/tmp/vagrant-puppet/keys'
+      end
     end
   end
 end
