@@ -115,15 +115,15 @@ Then it does the same with types
 ```
 No equivalent mechanism of scanning the cookbooks is implemented with Chef yet AFAIK.
 
-### Providing Versions via Template 
+### Providing Versions via Template
 For extracting the versions one can utilize the following parameter
 
 ```ruby
  version_template => $::uru::version_template ? {
   /\w+/   => $::uru::sut_role ? {
     /\w+/   => $::uru::version_template,
-    default => ''   
-  },   
+    default => ''  
+  },  
   default => ''
   }
 ```
@@ -132,7 +132,7 @@ Puppet resource
 ```ruby
 
   # Write the versions from caller provided template - only works for roles
-  if $version_template =~ /\w+/ {    
+  if $version_template =~ /\w+/ {   
     file { 'spec/local/versions.rb':
       ensure             => file,
       path               => "${tool_root}/spec/local/versions.rb",
@@ -140,7 +140,7 @@ Puppet resource
       source_permissions => ignore,
       require            => [File['spec/local']],
       before             => [File['runner']],
-    }  
+    } 
     }
 ```
 
@@ -150,7 +150,7 @@ $sut_version = '<%= scope.lookupvar("sut_version") -%>'
 ```
 and rspec conditional include:
 ```ruby
-if File.exists?( 'spec/local/versions.rb')  
+if File.exists?( 'spec/local/versions.rb') 
   require_relative 'versions.rb'
   puts "defined #{$sut_version}"
 end
@@ -728,7 +728,7 @@ a plain Ruby conditon will do.
 To compile uru package
 download ruby source from https://www.ruby-lang.org/en/downloads/, build and install Ruby into `/uru/ruby`:
 ```shell
-pushd /uru/ruby-2.3.6 
+pushd /uru/ruby-2.3.6
 ./configure --disable-install-capi --disable-install-rdoc --disable-install-doc --without-tk  --prefix=/uru/ruby
 ```
 ```shell
@@ -750,7 +750,7 @@ RUBY_VERSION='2.3.6'
 RUBY_VERSION_LONG='2.3.6p384'
 RUBY_TAG_LABEL='236p384'
 ```
-  
+
 and install the gems:
 ```shell
  ./uru_rt gem install --no-rdoc --no-ri specinfra serverspec rake rspec rspec_junit_formatter json nokogiri
@@ -762,9 +762,9 @@ cd /
 tar czvf ~sergueik/Downloads/uru_ruby_236.tar.gz /uru
 rm -rv -f uru/
 which ruby
-tar xzvf ~sergueik/Downloads/uru_ruby_236.tar.gz 
+tar xzvf ~sergueik/Downloads/uru_ruby_236.tar.gz
 pushd /uru/
-./runner.sh 
+./runner.sh
 # will report test passed
 ```
 
@@ -779,6 +779,21 @@ The
 serverspec provisioner:
 * The following settings shouldn't exist: rspec_opts
 ```
+### Inspec
+
+It is possible to install the `inspec.gem` for [Chef Inspec](https://github.com/chef/inspec)
+in the __uru__ environment and repackage and use in the similar fashion, use case as with serverspec. Note for `mixlib-shellout` you will need to use Ruby __2.2.x__
+To build dependency gems one will need to execute
+```shell
+sudo apt-get install build-essentials
+```
+
+or
+```sh
+sudo yum install make automake gcc gcc-c++ kernel-devel
+```
+Note: serverspec and inspec use very similar `Rakefile` and auxiliary Ruby files and switch from one to the other was not fully tested yet.
+
 ### Package (archive) contents
 
 ```bash
@@ -906,6 +921,6 @@ ruby/lib/ruby/gems/2.1.0/gems/rdoc-4.1.0/
  * [cucumber-reports](https://github.com/mkolisnyk/cucumber-reports)
  * [octocatalog-diff - compares Puppet catalogs built from 2 runs](https://github.com/github/octocatalog-diff)
  * [Fake: Mocks and Stubs For the Command Line](https://github.com/roman-neuhauser/fake)
- 
+
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
