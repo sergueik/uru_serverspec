@@ -905,6 +905,8 @@ ruby/lib/ruby/gems/2.1.0/gems/rdoc-4.1.0/
 
 ### See Also
 
+ * [Vagrantfile that installs and runs ruby, gem, serverspec after provision](https://github.com/andrewwardrobe/PuppetIntegration)
+ * [skeleton Vagratnfile for puppet provision](https://github.com/wstinkens/example_puppet-serverspec/)
  * [cucumberjs-junitxml](https://github.com/sonyschan/cucumberjs-junitxml)
  * [danger-junit Junit XML to HTML convertor](https://github.com/orta/danger-junit)
  * [automating serversped](http://annaken.blogspot.com/2015/07/automated-serverspec-logstash-kibana-part2.html)
