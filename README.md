@@ -22,7 +22,7 @@ To run the same set of tests locally on the insance in uru environment and remot
 [Vagrant serverspec](https://github.com/jvoorhis/vagrant-serverspec) plugin - see the example below on how to update the Vagrantfile.
 
 A possible alternative is to add the __uru\_serverspec__ module
-to control repository role / through a dedicated 'test' profile (stage), which will cause Puppet to verify the modules and everything declared in the 'production'  profile (stage).
+to control repository role / through a dedicated 'test' profile (stage), which will cause Puppet to verify the modules and everything declared in the 'production' profile (stage). This is possible [thanks](https://puppet.com/docs/puppet/5.0/file_serving.html) to a special `modules` mount point a __Puppet server__ serves files from every module directory as if someone had copied the files directory from every module into one big directory, renaming each of them with the name of their module. Note since acording to official [Puppet guidelines](https://puppet.com/docs/pe/2017.3/managing_nodes/the_roles_and_profiles_method.html) role class is supposed to declare profile classes with include, and do nothing else, one is discouraged from creating  files resources in the __role__ and would likely need to place serverspec files (which are in fact, role-specific) under profiles directory.
 
 The module __uru\_serverspec__ can be configured to execute `rake spec` with the serverspec files during every provision run (the default) or only when changes are detected in the ruby file or hiera configuration.
 
@@ -792,7 +792,7 @@ or
 ```sh
 sudo yum install make automake gcc gcc-c++ kernel-devel
 ```
-Note: serverspec and inspec use very similar `Rakefile` and auxiliary Ruby files. 
+Note: serverspec and inspec use very similar `Rakefile` and auxiliary Ruby files.
 Switch from one to the other was not fully tested yet.
 
 
