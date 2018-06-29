@@ -1,5 +1,6 @@
 #!/bin/bash
 
+WORKDIR='/uru'
 RESULTS_FILENAME='result_.json'
 RESULTS_DIRECTORY='results'
 
@@ -22,15 +23,18 @@ fi
 # https://stedolan.github.io/jq/manual/
 
 which jq 1>/dev/null 2>& 1
-if [ $? == 0 ] ; then
-  >/dev/null pushd $RESULTS_DIRECTORY
-  printf "${RED}"
-  # https://github.com/stedolan/jq/issues/785
-  # https://stackoverflow.com/questions/39139107/how-to-format-a-json-string-as-a-table-using-jq
-  jq -M ' .examples[] | select(.status != "passed")| "\(.full_description)\n"' $RESULTS_FILENAME | awk '{print $0}' | sed 's/Command.*$//'
-  printf "${NC}"
-  printf "${LIGHT_GREEN}Summary: ${BROWN}"
-  jq -M '.summary_line' $RESULTS_FILENAME
-  printf "${NC}"
-  >/dev/null popd
+if [ $? != 0 ] ; then
+  exit 1
 fi
+>/dev/null pushd $WORKDIR
+>/dev/null pushd $RESULTS_DIRECTORY
+printf "${RED}"
+# https://github.com/stedolan/jq/issues/785
+# https://stackoverflow.com/questions/39139107/how-to-format-a-json-string-as-a-table-using-jq
+jq -M ' .examples[] | select(.status != "passed")| "\(.full_description)\n"' $RESULTS_FILENAME | awk '{print $0}' | sed 's/Command.*$//'
+printf "${NC}"
+printf "${LIGHT_GREEN}Summary: ${BROWN}"
+jq -M '.summary_line' $RESULTS_FILENAME
+printf "${NC}"
+>/dev/null popd
+>/dev/null popd
