@@ -2,14 +2,86 @@
 
 ### Introduction
 
-There is a challenge to run [serverspec](http://serverspec.org/resource_types.html) on the instance that has
-Enterprise SSO / access management software provisioned to the role, for example [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
+There is a challenge to run [serverspec](http://serverspec.org/resource_types.html) on the instance managed
+by Puppet or Chef after
+that instance has the Enterprise SSO / access management software provisioned, since
+the remote acess is no longer possible.
+For example review the [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
 on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
 By design such software renders ssh and winrm ssh key-based remote access impossible.
 
 With the help of [uru](https://bitbucket.org/jonforums/uru/downloads) one can actually bootstrap a standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
 Linux or Windows.
+
+Another interesting use case is when Puppet provision serves as a driver of a
+massive deloyment of a list of microservice application stack e.g. Java jars / wars
+to the cluster of nodes.
+In this scenario, there would be a [Puppet profile](https://puppet.com/docs/pe/2017.2/r_n_p_intro.html)
+solely responsibe for deploying the domain specific subset of such
+stack, typically via a massive Puppet `create_resource` [function](https://puppet.com/docs/puppet/5.5/lang_resources_advanced.html#implementing-the-createresources-function)
+featuring a heavy hiera-centric configuration lookup to pick the release version, build, checksum and
+various application-specific parameters of the microservices:
+```puppet
+create_resources('microservice_deployent', lookup('profile::api::microservices'), {
+  path => $app_root_path,
+  tags => $tags,
+})
+```
+
+where all the details of home brewed `microservice_deployent`
+[defined type](https://puppet.com/docs/puppet/5.5/lang_defined_types.html)
+would be serialized from [hiera](https://puppet.com/docs/puppet/5.5/hiera.html):
+```yaml
+profile::api::microservices:
+  account_service:
+    v1:
+      artifact_name: 'account_service.war'
+      build_number: 123
+      artifact_chesksum: 'c4f5c6a37486002f56f269b5e98200a2be84a41498f698bc890b7c255eedeb74'
+      artifact_chesksum_type: 'sha256'
+```
+There will likely be more than one defined type like that in a real microservices hosting project.
+
+Apparently when the serverspec is confgured to run from the development host, this would lead to
+duplication of version/configuration information elsewhere which would be highly undesired.
+
+Ideally one would like to generate a serverspec test(s) for relevant components via some template and same hiera data from the same profile through
+[Puppet erb or epp](https://puppet.com/docs/puppet/5.5/lang_template.html) templates:
+```ruby
+require 'spec_helper'
+
+context '<%= @name -%>' do
+  # define all component configuration, version parameters
+  name = '<%= @name -%>'
+  catalina_home = '<%= @catalina_home -%>'
+  microservices = {
+    <% @microservices.each do |key,data| -%>
+      '<%= @key -%>' =>
+        {
+          artifact_name = '<%= data["artifact_name"] -%>',
+          artifact_chesksum = '<%= data["artifact_chesksum"] -%>',
+        },
+    <% end -%>
+  }
+  microservices.each do |key,data|
+    describe file("#{catalina_home}/webapps/#{name}/#{key}/#{data['artifact_name']}.war") do
+      it {should be_file}
+      its(:sha256sum) { should eq "data['artifact_chesksum']" }
+    end
+    describe file("#{catalina_home}/webapps/#{name}/#{key}/#{data['artifact_name']}") do
+      it {should be_directory}
+      # TODO: microservice configuration detail XML lookup
+    end
+    describe command("curl http://localhost:8443/#{catalina_home}/webapps/#{name}/health") do
+      its(:stdout) {should match 'UP'}
+    end
+  end
+end
+```
+
+- the server spec itself is elementary, its only complexity is with integration with the cluster Puppet hieradata.
+
 
 On Unix, there certainly are alternatives, but on Windows, rvm-like tools are scarcely available.
 The only alternative found was [pik](https://github.com/vertiginous/pik), and it is not maintained since 2012.
