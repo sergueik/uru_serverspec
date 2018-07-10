@@ -59,8 +59,8 @@ context '<%= @name -%>' do
     <% @microservices.each do |key,data| -%>
       '<%= @key -%>' =>
         {
-          artifact_name = '<%= data["artifact_name"] -%>',
-          artifact_chesksum = '<%= data["artifact_chesksum"] -%>',
+          'artifact_name' => '<%= data["artifact_name"] -%>',
+          'artifact_chesksum' => '<%= data["artifact_chesksum"] -%>',
         },
     <% end -%>
   }
@@ -74,14 +74,18 @@ context '<%= @name -%>' do
       # TODO: microservice configuration detail XML lookup
     end
     describe command("curl http://localhost:8443/#{catalina_home}/webapps/#{name}/health") do
-      its(:stdout) {should match 'UP'}
+      its(:stdout) { should match 'UP' }
     end
   end
 end
 ```
 
-- the server spec itself is elementary, its only complexity is with integration with the cluster Puppet hieradata.
-
+- the server spec itself is elementary, it builds a valid Ruby hash which mimics the hieradata schema, and
+possibly other Puppet scope variables describing the application comtainer details
+and runs a file, directory, service health and optionally some advanced configuration checks
+for every deployed microservice.
+Its only complexity arises with integration with the cluster Puppet hieradata - it is not uncommon
+when hundreds of microserice artifacts are deployed. Every now and then when a new  microservice expectaion is designed there is a moderate complexity task of coverting it into template.
 
 On Unix, there certainly are alternatives, but on Windows, rvm-like tools are scarcely available.
 The only alternative found was [pik](https://github.com/vertiginous/pik), and it is not maintained since 2012.
@@ -886,6 +890,8 @@ Switch from one to the other was not fully tested yet.
  * [cucumberjs-junitxml](https://github.com/sonyschan/cucumberjs-junitxml)
  * [cucumber-reports](https://github.com/mkolisnyk/cuc umber-reports)
  * [serverspec to inspec conversion example](https://github.com/bonusbits/example_serverspec_to_inspec)
+ * [vagrant execute](https://github.com/rgl/vagrant-execute)
+ * [winrm CLI](https://github.com/masterzen/winrm-cli)
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
