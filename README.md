@@ -84,8 +84,9 @@ end
 possibly other Puppet scope variables describing the application comtainer details
 and runs a file, directory, service health and optionally some advanced configuration checks
 for every deployed microservice.
-Its only complexity arises with integration with the cluster Puppet hieradata - it is not uncommon
-when hundreds of microserice artifacts are deployed. Every now and then when a new  microservice expectaion is designed there is a moderate complexity task of coverting it into template.
+Its only complexity arises with integration with the cluster Puppet hieradata - it is not uncommon when hundreds of microservice artifacts are deployed. Every now and then when a new  microservice expectaion is designed there is a moderate complexity task of coverting it into template.
+There is a little downside of template based serverspec generation - it is of course that the only environment
+everything is assembled fully is the instance itself.
 
 On Unix, there certainly are alternatives, but on Windows, rvm-like tools are scarcely available.
 The only alternative found was [pik](https://github.com/vertiginous/pik), and it is not maintained since 2012.
@@ -140,7 +141,7 @@ file {'spec/local':
 }
 ```
 
-Alternatively when using [roles and profiles](http://www.craigdunn.org/2012/05/239/)), the `uru` module can collect serverspec files from the profile: `/site/profile/files` which is also accessible via `puppet:///modules` URI.
+Alternatively when using [roles and profiles](http://www.craigdunn.org/2012/05/239/), the `uru` module can collect serverspec files from the profile: `/site/profile/files` which is also accessible via `puppet:///modules` URI.
 ```puppet
 file {'spec/local':
   ensure              => directory,
@@ -191,6 +192,12 @@ Then it does the same with types
 ```
 No equivalent mechanism of scanning the cookbooks is implemented with Chef yet AFAIK.
 
+Note that using Ruby `require_relative` one can make the serverspec file located within the
+[Puppet recommended module directory structure](https://puppet.com/docs/puppet/5.3/modules_fundamentals.html)
+be included into another serverspec file and executed from the developer host during the node provision through
+[vagrant-serverspec](https://github.com/vvchik/vagrant-serverspec) plugin.
+The exact instruction varies with the location of the serverspec which is often a non-standard one.
+
 ### Providing Versions via Template
 For extracting the versions one can utilize the following parameter
 
@@ -221,7 +228,7 @@ Puppet resource
 ```
 
 template
-```ruby000
+```ruby
 $sut_version = '<%= scope.lookupvar("sut_version") -%>'
 ```
 and rspec conditional include:
@@ -259,7 +266,7 @@ uru_rx.exe gem install --no-rdoc --no-ri serverspec rspec rake json rspec_junit_
 and zip the directory.
 
 NOTE: running __uru__ in a free Vmware instances provided by [Microsoft for IE/Edge testing](https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/),
-ona may need to add the [ffi.gem](https://rubygems.org/search?utf8=%E2%9C%93&query=ffi) which in turn may require installing [Ruby DeKit](https://rubyinstaller.org/add-ons/devkit.html) in the utu environment:
+one may need to add the [ffi.gem](https://rubygems.org/search?utf8=%E2%9C%93&query=ffi) which in turn may require installing [Ruby DevKit](https://rubyinstaller.org/add-ons/devkit.html) within uru environment:
 
 ```cmd
 cd c:\uru
@@ -542,24 +549,10 @@ Linux:
 Windows:
 ```cmd
 C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -executionpolicy remotesigned  ^
--Command "& {  \$env:URU_INVOKER = 'powershell'; iex -command 'uru_rt.exe admin add ruby/bin/' ; iex -command 'uru_rt.exe ruby processor.rb --no-warnings --maxcount 100'}"
+-Command "& {  \$env:URU_INVOKER = 'powershell'; invoke-expression -command 'uru_rt.exe admin add ruby/bin/' ; invoke-expression -command 'uru_rt.exe ruby processor.rb --no-warnings --maxcount 100'}"
 ```
 Alternatively on Windows one can process the `result.json` in pure Powewrshell:
 ```powershell
-<#
-    .SYNOPSIS
-    This subroutine processes the serverspec report and prints full description of failed examples.
-    Optionally shows pending examples, too.
-
-   .DESCRIPTION
-    This subroutine processes the serverspec report and prints description of examples that had not passed. Optionally shows pending examples, too.
-
-    .EXAMPLE
-    processor.ps1 -report 'result.json' -directory 'reports'  -serverspec 'spec/local' -warnings -maxcount 10
-
-    .PARAMETER warnings
-    switch: specify to print examples with the status 'pending'. By default only the examples with the status 'failed' are printed.
-#>
 param(
   [Parameter(Mandatory = $false)]
   [string]$name = 'result.json',
@@ -646,7 +639,7 @@ context ['"].+['"] do
 }
 ```
 
-For convenience the `processor.ps1` and `processor.rb` are provided. Finding and converting to a better structured HTML report layout with the help of additional gems is a work in progress.
+For convenience the `processor.ps1` and `processor.rb`, and `processor.sh` are provided. Finding and converting to a better structured HTML report layout with the help of additional gems is a work in progress.
 
 The Puppet module is available in a sibling directory:
  * [exec_uru.pp](https://github.com/sergueik/puppetmaster_vagrant/blob/master/modules/custom_command/manifests/exec_uru.pp)
@@ -831,7 +824,7 @@ and install the gems:
 ```shell
  ./uru_rt gem install --no-rdoc --no-ri specinfra serverspec rake rspec rspec_junit_formatter json nokogiri
 ```
-Finally package the direcrory, and verify it works on vanila node:
+Finally package the directory, and verify it works on a vanila node:
 
 ```shell
 cd /
@@ -847,7 +840,7 @@ pushd /uru/
 ### Note
 The RSpec `format` [options](https://relishapp.com/rspec/rspec-core/docs/command-line/format-option) provided in the `Rakefile`
 ```ruby
-t.rspec_opts = "--require spec_helper --format documentation --format html --out reports/report_#{$host}.html --format json --out reports/report_#{$host}.json"
+rspec_opts = "--require spec_helper --format documentation --format html --out results/result_#{$host}.html --format json --out results/result_#{$host}.json"
 ```
 are not compatible with [Vagrant serverspc plugin](https://github.com/jvoorhis/vagrant-serverspec), leading to the following error:
 ```ruby
@@ -868,8 +861,7 @@ or
 ```sh
 sudo yum install make automake gcc gcc-c++ kernel-devel
 ```
-Note: serverspec and inspec use very similar `Rakefile` and auxiliary Ruby files.
-Switch from one to the other was not fully tested yet.
+Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary Ruby files. Switch from one to the other was not fully tested yet.
 
 
 ### See Also
