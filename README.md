@@ -11,7 +11,8 @@ on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
 By design such software renders ssh and winrm ssh key-based remote access impossible.
 
-With the help of [uru](https://bitbucket.org/jonforums/uru/downloads) one can actually bootstrap a standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
+With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a 
+standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
 Linux or Windows.
 
 Another interesting use case is when Puppet provision serves as a driver of a
@@ -866,6 +867,7 @@ Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary 
 
 ### See Also
 
+ * ["Ruby Version Manager" chapter of "Ruby on Windows Guides" book by Boško Ivanišević](http://rubyonwindowsguides.github.io/book/ch02-03.html)
  * [skeleton Vagrantfile that installs and runs ruby, gem, serverspec after provision](https://github.com/andrewwardrobe/PuppetIntegration)
  * [skeleton Vagrantfile for puppet provision](https://github.com/wstinkens/example_puppet-serverspec/)
  * [sensu-plugins-serverspec](https://github.com/sensu-plugins/sensu-plugins-serverspec)
