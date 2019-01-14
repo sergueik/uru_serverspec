@@ -33,9 +33,10 @@ pushd $URU_HOME
 
 if [ -z $HOME ] ; then HOME='/root'; fi
 if [[ ! -d $HOME/.uru ]]; then mkdir "$HOME/.uru"; fi
-rm "$HOME/.uru/rubies.json"
+RUBIES="$HOME/.uru/rubies.json"
+rm -f $RUBIES
 # for Ruby 2.1.0
-cat <<EOF>$HOME/.uru/rubies.json
+cat <<EOF>$RUBIES
 {
   "Version": "1.0.0",
   "Rubies": {
