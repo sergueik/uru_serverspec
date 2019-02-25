@@ -11,7 +11,7 @@ on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
 By design such software renders ssh and winrm ssh key-based remote access impossible.
 
-With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a 
+With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a
 standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
 Linux or Windows.
 
@@ -864,6 +864,39 @@ sudo yum install make automake gcc gcc-c++ kernel-devel
 ```
 Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary Ruby files. Switch from one to the other was not fully tested yet.
 
+###  Puppet Beaker Integration testing tool
+
+Recently, Puppet switched to use Beaker to wrap Vagrant(Docker) and Serverspec to provision the instance(s),
+iterate across supported target platforms
+often performing mutiple consecutive puppet agent runs, and inspect the catalogs compilation and catalogs themselves
+using [core Beaker DSL](https://www.rubydoc.info/gems/beaker/2.4.1/Beaker/DSL/Helpers)
+and various extentions to produce tests
+which are
+* geared to deal more with catalog than with the system
+* good for module developers by exploring methods like  `apply_manifests` `get_last_applied_resources`
+and apparently somewhat heavily Rails metaprogramming-style expectations like:
+
+```ruby
+require 'spec_helper_acceptance'
+it 'should run without any errors' do
+  base_pp = <<-EOF
+    include stdlib
+  EOF
+  {
+    1 => 2,
+    2 => 0,
+  }.eacho do |run, status|
+    apply_manifest(base_pp,
+    :modulepath => '/etc/puppetlabs/code/modules',
+    :debug      => true,
+    :catch_failures => true).exit_code).to eq status
+  end
+end
+```
+* sampling valid, generic but really vague expectation, that conveys nothing about the error
+it might find and producing result that would only be legible to the developer of the module in question
+* somewhat formal and focused entirely on the Puppet catalog, prone of overlooking creation of damaged target systems
+
 
 ### See Also
 
@@ -886,6 +919,8 @@ Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary 
  * [serverspec to inspec conversion example](https://github.com/bonusbits/example_serverspec_to_inspec)
  * [vagrant execute](https://github.com/rgl/vagrant-execute)
  * [winrm CLI](https://github.com/masterzen/winrm-cli)
+ * [notes on using uru on Windows](http://www.neverletdown.net/2015/08/managing-multiple-ruby-versions-with-uru.html)
+ * __DSC Environment Analyzer__ [overview](https://microsoft.github.io/DSCEA/), another [introduction](https://blogs.technet.microsoft.com/ralphkyttle/2017/03/21/introducing-dscea/) and [source code](https://github.com/Microsoft/DSCEA)
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
