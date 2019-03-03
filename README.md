@@ -11,13 +11,10 @@ on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
 By design such software renders ssh and winrm ssh key-based remote access impossible.
 
-With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a
-standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
-Linux or Windows.
+With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a standalone rvm-like Ruby environment to run serverspec directly on the instance, for both Linux or Windows. The only prerequisite on a Linux system are `openssl-libs`, `libcrypt` and `libyaml` libraries, snt those are very likely already installed for openssl stack.
 
 Another interesting use case is when Puppet provision serves as a driver of a
-massive deloyment of a list of microservice application stack e.g. Java jars / wars
-to the cluster of nodes.
+massive deloyment of a list of microservice application stack e.g. Java jars / wars to the cluster of nodes.
 In this scenario, there would be a [Puppet profile](https://puppet.com/docs/pe/2017.2/r_n_p_intro.html)
 solely responsibe for deploying the domain specific subset of such
 stack, typically via a massive Puppet `create_resource` [function](https://puppet.com/docs/puppet/5.5/lang_resources_advanced.html#implementing-the-createresources-function)
@@ -901,6 +898,7 @@ it might find and producing result that would only be legible to the developer o
 ### See Also
 
  * ["Ruby Version Manager" chapter of "Ruby on Windows Guides" book by Boško Ivanišević](http://rubyonwindowsguides.github.io/book/ch02-03.html)
+ * the original __uru__ project on [bitbucket](https://bitbucket.org/jonforums/uru)
  * [skeleton Vagrantfile that installs and runs ruby, gem, serverspec after provision](https://github.com/andrewwardrobe/PuppetIntegration)
  * [skeleton Vagrantfile for puppet provision](https://github.com/wstinkens/example_puppet-serverspec/)
  * [sensu-plugins-serverspec](https://github.com/sensu-plugins/sensu-plugins-serverspec)
