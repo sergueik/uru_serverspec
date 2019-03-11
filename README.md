@@ -3,15 +3,16 @@
 ### Introduction
 
 There is a challenge to run [serverspec](http://serverspec.org/resource_types.html) on the instance managed
-by Puppet or Chef after
-that instance has the Enterprise SSO / access management software provisioned, since
-the remote acess is no longer possible.
+by Puppet or Chef after the Enterprise single sign-on (SSO) a.k.a. access management software provisioned.
 For example review the [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
 on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
 By design such software renders ssh and winrm ssh key-based remote access impossible.
+This is the critical mechanism serverspec / inspec relies on for code delivery.
 
-With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a standalone rvm-like Ruby environment to run serverspec directly on the instance, for both Linux or Windows. The only prerequisite on a Linux system are `openssl-libs`, `libcrypt` and `libyaml` libraries, snt those are very likely already installed for openssl stack.
+With the help of [Ruby Version Managemenr](https://en.wikipedia.org/wiki/Ruby_Version_Manager)
+and specifically [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can bootstrap a standalone Ruby environment to run serverspec directly on the instance, on either Linux or Windows.
+The only prerequisite on a Linux system are `openssl-libs`, `libcrypt` and `libyaml` libraries, snt those are very likely already installed for openssl stack.
 
 Another interesting use case is when Puppet provision serves as a driver of a
 massive deloyment of a list of microservice application stack e.g. Java jars / wars to the cluster of nodes.
@@ -126,14 +127,17 @@ config.vm.provision :serverspec do |spec|
   end
 end
 ```
-The __uru\_serverspec__ module can collect serverspec resources from other modules's via Puppet's `puppet:///modules` URI and
+The __uru\_serverspec__ module can collect serverspec resources from other modules's via Puppet's `puppet:///modules`
+URI and
 the Puppet [file](https://docs.puppet.com/puppet/latest/reference/type.html#file-attribute-sourceselect) resource:
 ```puppet
 file {'spec/local':
   ensure              => directory,
   path                => "${tool_root}/spec/local",
   recurse             => true,
-  source              => $::uru_serverspec::covered_modules.map |$name| {"puppet:///modules/${name}/serverspec/${::osfamily}"},
+  source              => $::uru_serverspec::covered_modules.map |$name| {
+    "puppet:///modules/${name}/serverspec/${::osfamily}"
+  },
   source_permissions => ignore,
   sourceselect        => all,
 }
