@@ -923,6 +923,7 @@ it might find and producing result that would only be legible to the developer o
  * [winrm CLI](https://github.com/masterzen/winrm-cli)
  * [notes on using uru on Windows](http://www.neverletdown.net/2015/08/managing-multiple-ruby-versions-with-uru.html)
  * __DSC Environment Analyzer__ [overview](https://microsoft.github.io/DSCEA/), another [introduction](https://blogs.technet.microsoft.com/ralphkyttle/2017/03/21/introducing-dscea/) and [source code](https://github.com/Microsoft/DSCEA)
+ * [uzyexe/serverspec Docker build env](https://github.com/uzyexe/dockerfile-serverspec)
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
