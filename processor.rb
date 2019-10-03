@@ -5,6 +5,7 @@ require 'rubygems'
 require 'json'
 require 'pp'
 
+$DEBUG = false
 options = {
   :maxcount   => 100,
   :name       => 'result_.json',
@@ -46,13 +47,27 @@ end
 results_path = "#{options[:directory]}/#{options[:name]}"
 puts 'Reading: ' + results_path
 have_results = false
-begin
-  results_obj = JSON.parse(File.read(results_path), symbolize_names: true)
-  have_results = true
-rescue JSON::UnparserError => e
-  results_obj = { :summary_line => 'empty JSON file.' }
+if File.size(results_path) == 0 # NOTE: not File.size?
+  puts 'Detected empty results: ' + results_path
+  results_obj = { :summary_line => 'empty JSON file.',
+    :examples => []
+  }
+else
+  begin
+    # A JSON text must at least contain two octets!
+    # JSON:ParserError
+    results_obj = JSON.parse(File.read(results_path), symbolize_names: true)
+    have_results = true
+  rescue JSON::ParserError => e
+    results_obj = { :summary_line => 'invalid JSON file.',
+      :examples => []
+    }
+  rescue JSON::UnparserError => e # TODO: what is the difference?
+    results_obj = { :summary_line => 'invalid JSON file.',
+      :examples => []
+    }
+  end
 end
-
 VALID_PATH_REGEXP = /([A-Z|a-z]:\\[^*|"<>?\n]*)|(\\\\.*?\\.*)/
 
 # https://stackoverflow.com/questions/32081534/ruby-json-node-select-view-value-change
@@ -89,11 +104,11 @@ if $stdin.isatty
   # only generation of JSON objects or arrays allowed (JSON::GeneratorError)
   # puts JSON.pretty_generate(results_obj[:summary_line])
   pp results_obj[:summary_line]
-  
+
 else
   count = 1
   if have_results
-  
+
     results_obj[:examples].each do |example|
       if example[:status] !~ Regexp.new(ignore_statuses,Regexp::IGNORECASE)
 
@@ -120,7 +135,7 @@ else
       puts spec_path.gsub(/^.+\//,'') + "\t" + (100.00 * number_examples[:passed] / (number_examples[:passed] + number_examples[:failed])).round(2).to_s + "%\t" + context
     end
   end
-  
+
   puts 'Summary:'
   puts results_obj[:summary_line]
 end

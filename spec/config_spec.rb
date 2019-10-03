@@ -33,8 +33,12 @@ context 'Read the file contents from command STDOUT, alt.syntax' do
     end
   end
 end
-
+# can use similar code to business domain-specific checks
+# e.g. scope|exclude certain tests to|from executing in certain environment(s)
 context 'Read the file', :if => ENV.has_key?('URU_INVOKER') do
+  # NOTE: the condition above will block the test but will not
+  # prevent the following line appears be printed
+  # $stderr.puts "Running #{self.to_s}"
   describe file(config_file) do
     it { should be_file }
     {
@@ -42,6 +46,22 @@ context 'Read the file', :if => ENV.has_key?('URU_INVOKER') do
       'key2' => 'value2',
     }.each do |key, value|
       it { should contain /#{key}: #{value}/}
+    end
+  end
+end
+
+$uru_invoker = (ENV.fetch('URU_INVOKER', nil) =~ /^(?:\w+)$/i)
+if $uru_invoker
+  # this will toggle between N examples and N-1 examples
+  context 'Read the file' do
+    describe file(config_file) do
+      it { should be_file }
+      {
+        'key1' => 'value1',
+        'key2' => 'value2',
+      }.each do |key, value|
+        it { should contain /#{key}: #{value}/}
+      end
     end
   end
 end

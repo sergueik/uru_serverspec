@@ -3,21 +3,18 @@
 ### Introduction
 
 There is a challenge to run [serverspec](http://serverspec.org/resource_types.html) on the instance managed
-by Puppet or Chef after
-that instance has the Enterprise SSO / access management software provisioned, since
-the remote acess is no longer possible.
+by Puppet or Chef after the Enterprise single sign-on (SSO) a.k.a. access management software provisioned.
 For example review the [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
 on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
 By design such software renders ssh and winrm ssh key-based remote access impossible.
+This is the critical mechanism serverspec / inspec relies on for code delivery.
 
-With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a
-standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
-Linux or Windows.
+With the help of [Ruby Version Manager](https://en.wikipedia.org/wiki/Ruby_Version_Manager) and specifically [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can bootstrap a standalone Ruby environment to run serverspec directly on the instance, on either Linux or Windows.
+The only prerequisite on a Linux system are `openssl-libs`, `libcrypt` and `libyaml` libraries, snt those are very likely already installed for openssl stack.
 
 Another interesting use case is when Puppet provision serves as a driver of a
-massive deloyment of a list of microservice application stack e.g. Java jars / wars
-to the cluster of nodes.
+massive deloyment of a list of microservice application stack e.g. Java jars / wars to the cluster of nodes.
 In this scenario, there would be a [Puppet profile](https://puppet.com/docs/pe/2017.2/r_n_p_intro.html)
 solely responsibe for deploying the domain specific subset of such
 stack, typically via a massive Puppet `create_resource` [function](https://puppet.com/docs/puppet/5.5/lang_resources_advanced.html#implementing-the-createresources-function)
@@ -129,14 +126,17 @@ config.vm.provision :serverspec do |spec|
   end
 end
 ```
-The __uru\_serverspec__ module can collect serverspec resources from other modules's via Puppet's `puppet:///modules` URI and
+The __uru\_serverspec__ module can collect serverspec resources from other modules's via Puppet's `puppet:///modules`
+URI and
 the Puppet [file](https://docs.puppet.com/puppet/latest/reference/type.html#file-attribute-sourceselect) resource:
 ```puppet
 file {'spec/local':
   ensure              => directory,
   path                => "${tool_root}/spec/local",
   recurse             => true,
-  source              => $::uru_serverspec::covered_modules.map |$name| {"puppet:///modules/${name}/serverspec/${::osfamily}"},
+  source              => $::uru_serverspec::covered_modules.map |$name| {
+    "puppet:///modules/${name}/serverspec/${::osfamily}"
+  },
   source_permissions => ignore,
   sourceselect        => all,
 }
@@ -864,10 +864,44 @@ sudo yum install make automake gcc gcc-c++ kernel-devel
 ```
 Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary Ruby files. Switch from one to the other was not fully tested yet.
 
+###  Puppet Beaker Integration testing tool
+
+Recently, Puppet switched to use Beaker to wrap Vagrant(Docker) and Serverspec to provision the instance(s),
+iterate across supported target platforms
+often performing mutiple consecutive puppet agent runs, and inspect the catalogs compilation and catalogs themselves
+using [core Beaker DSL](https://www.rubydoc.info/gems/beaker/2.4.1/Beaker/DSL/Helpers)
+and various extentions to produce tests
+which are
+* geared to deal more with catalog than with the system
+* good for module developers by exploring methods like  `apply_manifests` `get_last_applied_resources`
+and apparently somewhat heavily Rails metaprogramming-style expectations like:
+
+```ruby
+require 'spec_helper_acceptance'
+it 'should run without any errors' do
+  base_pp = <<-EOF
+    include stdlib
+  EOF
+  {
+    1 => 2,
+    2 => 0,
+  }.eacho do |run, status|
+    apply_manifest(base_pp,
+    :modulepath => '/etc/puppetlabs/code/modules',
+    :debug      => true,
+    :catch_failures => true).exit_code).to eq status
+  end
+end
+```
+* sampling valid, generic but really vague expectation, that conveys nothing about the error
+it might find and producing result that would only be legible to the developer of the module in question
+* somewhat formal and focused entirely on the Puppet catalog, prone of overlooking creation of damaged target systems
+
 
 ### See Also
 
  * ["Ruby Version Manager" chapter of "Ruby on Windows Guides" book by Boško Ivanišević](http://rubyonwindowsguides.github.io/book/ch02-03.html)
+ * the original __uru__ project on [bitbucket](https://bitbucket.org/jonforums/uru)
  * [skeleton Vagrantfile that installs and runs ruby, gem, serverspec after provision](https://github.com/andrewwardrobe/PuppetIntegration)
  * [skeleton Vagrantfile for puppet provision](https://github.com/wstinkens/example_puppet-serverspec/)
  * [sensu-plugins-serverspec](https://github.com/sensu-plugins/sensu-plugins-serverspec)
@@ -886,6 +920,9 @@ Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary 
  * [serverspec to inspec conversion example](https://github.com/bonusbits/example_serverspec_to_inspec)
  * [vagrant execute](https://github.com/rgl/vagrant-execute)
  * [winrm CLI](https://github.com/masterzen/winrm-cli)
+ * [notes on using uru on Windows](http://www.neverletdown.net/2015/08/managing-multiple-ruby-versions-with-uru.html)
+ * __DSC Environment Analyzer__ [overview](https://microsoft.github.io/DSCEA/), another [introduction](https://blogs.technet.microsoft.com/ralphkyttle/2017/03/21/introducing-dscea/) and [source code](https://github.com/Microsoft/DSCEA)
+ * [uzyexe/serverspec Docker build env](https://github.com/uzyexe/dockerfile-serverspec)
 
 
 NOTE: the operations does not (and actually cannot) directly follow a "Patch README document" which typically reads like below:
