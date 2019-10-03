@@ -11,7 +11,7 @@ on Unix and various vendors-specific authentication schemes on Windows, e.g.
 [2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
 By design such software renders ssh and winrm ssh key-based remote access impossible.
 
-With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a 
+With the help of [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can actually bootstrap a
 standalone rvm-like Ruby environment to run serverspec directly on the instance, for both
 Linux or Windows.
 
@@ -886,6 +886,21 @@ Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary 
  * [serverspec to inspec conversion example](https://github.com/bonusbits/example_serverspec_to_inspec)
  * [vagrant execute](https://github.com/rgl/vagrant-execute)
  * [winrm CLI](https://github.com/masterzen/winrm-cli)
+
+
+NOTE: the operations does not (and actually cannot) directly follow a "Patch README document" which typically reads like below:
+
+ - Shutdown the server if you have already
+ - Copy patch files into their destinations (like `$APP_HOME/repository/components/patches`
+ - Inject specific entries so configurations
+ - Modify command line options to launchers
+ - Do specific changes to systemd unit files
+ - Restart the service with a provided command
+
+This does not directly translate into the Puppet (Chef, Ansible, Powershell DSC, name your provision schema) workflow for many reasons
+  - vendor specific API / DSL for connecting resourcesand for code / parameter segregation (members of your team are all Puppet certified, aren't they)
+  - In-house best practices for structuring the configurations hierarchically
+  - If the __Patch101__ *was already puppetized*, the __Patch102__ will most likely be a a copy paste of __Patch101__
 
 ### Author
 [Serguei Kouzmine](kouzmine_serguei@yahoo.com)
