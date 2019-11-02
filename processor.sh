@@ -53,6 +53,16 @@ else
 fi
 printf "${LIGHT_GREEN}Summary: ${BROWN}"
 jq -M '.summary_line' $RESULTS_FILENAME
+RESULTS_FILTERED_FILENAME="${RESULTS_BASENAME}_.filtered.json"
+# assuming there are two distinct kinds of spec files and we are only interested in the errors of one
+# the below jq command filter that, but currently loses the summary details
+# comment if throwing an error
+SPEC_FILE='role_spec.rb'
+jq '[.examples[]|select(.file_path|endswith("role_spec.rb"))]' $RESULTS_FILENAME > $RESULTS_FILTERED_FILENAME
+# NOTE:  the jq command seems to need single quotes
+# jq: error: syntax error, unexpected INVALID_CHARACTER
+EXPR='[.examples[]|select(.file_path|endswith("'$SPEC_FILE'"))]'
+jq $EXPR $RESULTS_FILENAME > $RESULTS_FILTERED_FILENAME
 printf "${NC}"
 >/dev/null popd
 >/dev/null popd
