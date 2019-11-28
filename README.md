@@ -11,7 +11,7 @@ By design such software renders ssh and winrm ssh key-based remote access imposs
 This is the critical mechanism serverspec / inspec relies on for code delivery.
 
 With the help of [Ruby Version Manager](https://en.wikipedia.org/wiki/Ruby_Version_Manager) and specifically [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can bootstrap a standalone Ruby environment to run serverspec directly on the instance, on either Linux or Windows.
-The only prerequisite on a Linux system are `openssl-libs`, `libcrypt` and `libyaml` libraries, snt those are very likely already installed for openssl stack.
+The only prerequisite on a Linux system are `openssl-libs`, `libcrypt` and `libyaml` libraries, those are very likely already installed for openssl stack on a generic linux box.
 
 Another interesting use case is when Puppet provision serves as a driver of a
 massive deloyment of a list of microservice application stack e.g. Java jars / wars to the cluster of nodes.
@@ -44,7 +44,7 @@ There will likely be more than one defined type like that in a real microservice
 Apparently when the serverspec is confgured to run from the development host, this would lead to
 duplication of version/configuration information elsewhere which would be highly undesired.
 
-Ideally one would like to generate a serverspec test(s) for relevant components via some template and same hiera data from the same profile through
+Ideally one would like to generate a serverspec test(s) for multile Puppet managed components via some template and same hiera data from the same profile through
 [Puppet erb or epp](https://puppet.com/docs/puppet/5.5/lang_template.html) templates:
 ```ruby
 require 'spec_helper'
@@ -897,6 +897,22 @@ end
 it might find and producing result that would only be legible to the developer of the module in question
 * somewhat formal and focused entirely on the Puppet catalog, prone of overlooking creation of damaged target systems
 
+### Non-root account
+
+The initial version of __uru\_serverspec__ module the Ruby has been compiled and packaged by the root account. To switch __uru\_serverspec__ module to operate under a non-root user the simpest way is to 
+
+* Copy the `.gem` folder into the target user home directory:
+```sh
+URU_USER='uru_user'
+adduser $URU_USER
+cp -R /root/.gem/ ~$URU_USER/
+```
+* Adjust files and directories ownership:
+```sh
+chown -R $URU_USER:$URU_USER ~$URU_USER/.gem/
+chown -R $URU_USER:$URU_USER $URU_HOME
+```
+Now the spec can be run by `$URU_USER`.
 
 ### See Also
 
