@@ -3,8 +3,9 @@
 # set -x
 # URU_HOME='<%= @uru_home -%>'
 if [ -z $URU_HOME ]
-then 
+then
   URU_HOME='/uru'
+  URU_HOME='/home/uru_user/uru_homebased'
 fi
 export URU_HOME
 
@@ -27,11 +28,20 @@ URU_RUNNER=$URU_HOME/uru_rt
 
 pushd $URU_HOME
 
-# TODO: execute 
+# TODO: execute
 # $URU_RUNNER admin refresh
 # when the ~/.uru/rubies.json, in particular the GemHome, is different
 
-if [ -z $HOME ] ; then HOME='/root'; fi
+if [ -z $HOME ] ; then
+  if [[ "$EUID" -ne 0 ]]
+  then
+    HOME="/home/${USER}"
+  else
+    HOME='/root'
+  fi
+
+fi
+
 if [[ ! -d $HOME/.uru ]]; then mkdir "$HOME/.uru"; fi
 RUBIES="$HOME/.uru/rubies.json"
 rm -f $RUBIES
@@ -72,11 +82,11 @@ echo Y |$URU_RUNNER admin rm $RUBY_TAG_LABEL > /dev/null
 $URU_RUNNER admin add ruby/bin
 
 if [ ! -z $DEBUG ]
-then 
+then
   $URU_RUNNER ls --verbose
 fi
 if [ ! -z $DEBUG ]
-then 
+then
   TAG=`$URU_RUNNER ls 2>& 1|awk '{print $1}'`
   $URU_RUNNER $TAG
 fi
@@ -87,7 +97,7 @@ fi
 cp -R .gem $HOME
 
 if [ ! -z $DEBUG ]
-then 
+then
   # Verify the gems
   $URU_RUNNER gem list --local
 fi
