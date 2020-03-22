@@ -7,21 +7,21 @@ require 'pp'
 
 $DEBUG = false
 options = {
-  :maxcount   => 100,
-  :name       => 'result_.json',
-  :directory  => 'results',
-  :serverspec => 'spec/local',
-  :warnings   => false,
+  :maxcount         => 100,
+  :results_filename => 'result_.json',
+  :directory        => 'results',
+  :serverspec       => 'spec/local',
+  :warnings         => false,
 }
 
 opt = OptionParser.new
 
-opt.on('-dDIRECTORY', '--directory=DIRECTORY', 'Path to the results') do |val|
+opt.on('-dDIRECTORY', '--directory=DIRECTORY', 'Path to the results (default: "results")') do |val|
   options[:directory] = val
 end
 
-opt.on('-nNAME', '--name=NAME', 'Result report name') do |val|
-  options[:name] = val
+opt.on('-nNAME', '--results_filename=NAME', 'Results filename (default: "result_.json")') do |val|
+  options[:results_filename] = val
 end
 
 opt.on('-sSERVERSPEC', '--serverspec=SERVERSPEC', 'Path to serverspec') do |val|
@@ -44,7 +44,7 @@ else
   '(?:passed|pending)'
 end
 
-results_path = "#{options[:directory]}/#{options[:name]}"
+results_path = "#{options[:directory]}/#{options[:results_filename]}"
 puts 'Reading: ' + results_path
 have_results = false
 if File.size(results_path) == 0 # NOTE: not File.size?

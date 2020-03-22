@@ -14,9 +14,9 @@
 #>
 param(
   [Parameter(Mandatory = $false)]
-  [string]$name = 'result_.json',
+  [string]$results_filename = 'result_.json',
   [Parameter(Mandatory = $false)]
-  [string]$directory = 'results',
+  [string]$results_directory = 'results',
   [Parameter(Mandatory = $false)]
   [string]$serverspec = 'spec\local',
   [int]$maxcount = 100,
@@ -31,7 +31,7 @@ if (-not ([bool]$PSBoundParameters['warnings'].IsPresent)) {
 
 $statuses_regexp = '(?:' + ($statuses -join '|') + ')'
 
-$results_path = ("${directory}/${name}" -replace '/','\');
+$results_path = ("${directory}/${results_filename}" -replace '/','\');
 if (-not (Test-Path $results_path)) {
   write-output ('Results is unavailable: "{0}"' -f $results_path);
   exit 0

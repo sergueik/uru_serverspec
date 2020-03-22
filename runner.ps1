@@ -1,9 +1,14 @@
 param (
+  [string]$results_filename = 'result_.json',
   [switch]$debug,
   [switch]$per_user
 )
 
+$results_directory = 'results'
+$default_results_basename = 'result_'
+$results_basename = $results_filename -replace '\..*$', ''
 $per_user_install = [bool]$PSBoundParameters['per_user'].IsPresent
+
 if ($debug){
   $debugpreference_saved = $debugpreference
   $debugpreference = 'continue'
@@ -97,8 +102,19 @@ popd
 
 # extract summary_line
 # NOTE: convertFrom-json requires Powershell 3.
-$report = get-content -path "${RESULTS_PATH}\result.json" | convertfrom-json
+$report = get-content -path "${RESULTS_PATH}\result_.json" | convertfrom-json
 write-output ($report.'summary_line')
+
+if ($results_basename  -ne $default_results_basename ) {
+  # Rename hardcoded in Rakefile serverspec reports to specified names
+  if ( test-path -path $results_directory) {
+    pushd $results_directory
+    write-debug "results in ${results_directory}/${results_filename}"
+    move-item -path "${default_results_basename}.json" -destination $results_filename -force
+    move-item -path "${default_results_basename}.html" -destination "${results_basename}.html" -force
+    popd
+  }
+}
 
 $script:URU_HOME = $null
 if ($debug){

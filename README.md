@@ -1,4 +1,4 @@
-## Uru Serverspec
+﻿## Uru Serverspec
 
 ### Introduction
 
@@ -396,7 +396,7 @@ require 'spec_helper'
 context 'uru smoke test' do
   context 'basic os' do
     describe port(22) do
-        it { should be_listening.with('tcp')  }
+      it { should be_listening.with('tcp')  }
     end
   end
   context 'detect uru environment' do
@@ -477,7 +477,7 @@ The results are nicely formatted in a standalone [HTML report](https://coderwall
 
 ![resultt](https://raw.githubusercontent.com/sergueik/uru_serverspec/master/screenshots/result.png)
 
-and a json:
+and as json:
 ```javascript
 {
     "version": "3.5.0.beta4",
@@ -641,6 +641,43 @@ context ['"].+['"] do
 ```
 
 For convenience the `processor.ps1` and `processor.rb`, and `processor.sh` are provided. Finding and converting to a better structured HTML report layout with the help of additional gems is a work in progress.
+As default, the report file names results are saved are `results_.json` and `results.html`. The argument allows overriding this:
+On Linux:
+```sh
+./runner.sh myresult.json
+```
+```
+Results in results/myresult.json
+```
+then
+```sh
+./processor.sh myresult.json
+```
+```sh
+No failed tests.
+Summary: "3 examples, 0 failures"
+```
+or
+```sh
+./uru_rt ruby processor.rb --results_filename myresult.json
+Reading: results/myresult.json
+"3 examples, 0 failures"
+```
+On Windows:
+```cmd
+. .\runner.ps1 myresult.json
+```
+```cmd
+DEBUG: results in results/myresult.json
+```
+and
+```cmd
+. .\processor.ps1 -results_filename myresult.json
+```
+or, alternatively
+```cmd
+ .\uru_rt.exe ruby .\processor.rb --results_filename myresult.json
+```
 
 The Puppet module is available in a sibling directory:
  * [exec_uru.pp](https://github.com/sergueik/puppetmaster_vagrant/blob/master/modules/custom_command/manifests/exec_uru.pp)

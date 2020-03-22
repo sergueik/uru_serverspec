@@ -1,10 +1,14 @@
 #!/bin/bash
 
-WORKDIR=${1:-/uru}
-RESULTS_BASENAME=${2:-result}
+# RESULTS_DIRECTORY='reports'
+# DEFAULT_RESULTS_BASENAME='report_'
 
-RESULTS_FILENAME="${RESULTS_BASENAME}_.json"
-RESULTS_DIRECTORY="${RESULTS_BASENAME}s"
+RESULTS_DIRECTORY='results'
+DEFAULT_RESULTS_BASENAME='result_'
+RESULTS_FILENAME=${1:-$DEFAULT_RESULTS_BASENAME.json}
+RESULTS_BASENAME=${RESULTS_FILENAME%.*}
+
+WORKDIR=${2:-/uru}
 
 # https://stackoverflow.com/questions/911168/how-to-detect-if-my-shell-script-is-running-through-a-pipe
 if [ -t 1 ] ; then
@@ -28,6 +32,7 @@ fi
 
 which jq 1>/dev/null 2>& 1
 if [ $? != 0 ] ; then
+  echo 'jq not found'
   exit 1
 fi
 if [ ! -d $WORKDIR  ] ; then
@@ -53,13 +58,13 @@ else
 fi
 printf "${LIGHT_GREEN}Summary: ${BROWN}"
 jq -M '.summary_line' $RESULTS_FILENAME
-RESULTS_FILTERED_FILENAME="${RESULTS_BASENAME}_.filtered.json"
+RESULTS_FILTERED_FILENAME="${RESULTS_BASENAME}_filtered.json"
 # assuming there are two distinct kinds of spec files and we are only interested in the errors of one
 # the below jq command filter that, but currently loses the summary details
 # comment if throwing an error
 SPEC_FILE='role_spec.rb'
 jq '[.examples[]|select(.file_path|endswith("role_spec.rb"))]' $RESULTS_FILENAME > $RESULTS_FILTERED_FILENAME
-# NOTE:  the jq command seems to need single quotes
+# NOTE: the jq command seems to require single quotes
 # jq: error: syntax error, unexpected INVALID_CHARACTER
 EXPR='[.examples[]|select(.file_path|endswith("'$SPEC_FILE'"))]'
 jq $EXPR $RESULTS_FILENAME > $RESULTS_FILTERED_FILENAME
