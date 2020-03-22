@@ -641,6 +641,13 @@ context ['"].+['"] do
 ```
 
 For convenience the `processor.ps1` and `processor.rb`, and `processor.sh` are provided. Finding and converting to a better structured HTML report layout with the help of additional gems is a work in progress.
+
+The Puppet module is available in a sibling directory:
+ * [exec_uru.pp](https://github.com/sergueik/puppetmaster_vagrant/blob/master/modules/custom_command/manifests/exec_uru.pp)
+ * [uru_runner_ps1.erb](https://github.com/sergueik/puppetmaster_vagrant/blob/master/modules/custom_command/templates/uru_runner_ps1.erb)
+
+### Specifying filename of the serverspec Report
+
 As default, the report file names results are saved are `results_.json` and `results.html`. The argument allows overriding this:
 On Linux:
 ```sh
@@ -678,11 +685,44 @@ or, alternatively
 ```cmd
  .\uru_rt.exe ruby .\processor.rb --results_filename myresult.json
 ```
+#### Specifying user-sensitive tests
+The most natural use case ofspecfying the file name of the serverpsec report is 
+when there are user sensitive validations.
+The fragment below demonstrates this:
+```ruby
+require 'spec_helper'
 
-The Puppet module is available in a sibling directory:
- * [exec_uru.pp](https://github.com/sergueik/puppetmaster_vagrant/blob/master/modules/custom_command/manifests/exec_uru.pp)
- * [uru_runner_ps1.erb](https://github.com/sergueik/puppetmaster_vagrant/blob/master/modules/custom_command/templates/uru_runner_ps1.erb)
-
+context 'user sensitive' do
+  root_home = '/root'
+  # condition at the 'describe' level
+  context 'home directory' do
+    describe command('echo $HOME'), :if => ENV.fetch('USER').eql?('root') do
+      its(:stdout) { should match Regexp.new(root_home) }
+    end
+    describe command('echo $HOME'), :unless => ENV.fetch('USER').eql?('root') do
+      its(:stdout) { should_not match Regexp.new(root_home) }
+    end
+  end
+  # condition at the 'context' level
+  context 'home directory', :if => ENV.fetch('USER').eql?('root') do
+    describe command('echo $HOME') do
+      its(:stdout) { should match Regexp.new(root_home) }
+    end
+  end
+  context 'home directory', :unless => ENV.fetch('USER').eql?('root') do
+    describe command('echo $HOME') do
+      its(:stdout) { should_not match Regexp.new(root_home) }
+    end
+  end
+  # include branch condition in the 'title' property
+  context "home directory of #{ENV.fetch('USER')}" do
+    describe command('echo $HOME') do
+      its(:stdout) { should_not be_empty }
+    end
+  end
+end
+```
+the equivalent code for Windows is awork in progress.
 ### Migration
 To migrate serverspec from a the [vagrant-serverspec](https://github.com/jvoorhis/vagrant-serverspec) default directory, one may use
 `require_relative`. Also pay attention to use a conditional
