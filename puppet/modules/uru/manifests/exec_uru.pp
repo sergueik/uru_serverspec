@@ -114,6 +114,25 @@ define exec_uru(
         subscribe   => Exec["Execute uru ${name}"],
         logoutput   => true,
       }
+      file { "processor Ruby script of ${name}" :
+        ensure  => 'file',
+	path    => "${report_dir}/processor.rb"
+        source  => "puppet:///modules/${name}/processor.rb",
+        require => File[$report_dir],
+      }
+      file { "processor Powershell script of ${name}" :
+        ensure  => 'file',
+	path    => "${report_dir}/processor.ps1"
+        source  => "puppet:///modules/${name}/processor.ps1",
+        require => File[$report_dir],
+      }
+      file { "processor batch script of ${name}" :
+        ensure  => 'file',
+	path    => "${report_dir}/processor.cmd"
+        source  => "puppet:///modules/${name}/processor.cmd",
+        require => File[$report_dir],
+      }
+
     }
     default: {
       file { "${name} launcher script":
@@ -121,6 +140,18 @@ define exec_uru(
         path    => $script_path,
         content => regsubst(template('custom_command/uru_runner_sh.erb'), "\r\n", "\n", 'G')',
         mode    => '0755',
+      }
+      file { "processor Ruby script of ${name}" :
+        ensure  => 'file',
+	path    => "${report_dir}/processor.rb"
+        source  => "puppet:///modules/${name}/processor.rb",
+        require => File[$report_dir],
+      }
+      file { "processor Shell script of ${name}" :
+        ensure  => 'file',
+        path    => "${report_dir}/processor.sh"
+        source  => "puppet:///modules/${name}/processor.sh",
+        require => File[$report_dir],
       }
     }
   }

@@ -1,8 +1,17 @@
+param (
+  [string]$results_filename = 'report_.json',
+  [switch]$debug,
+  [switch]$per_user
+)
+
 write-output ('{0} = "{1}"'  -f 'USERNAME' , $env:USERNAME )
 write-output ('{0} = "{1}"'  -f 'USERPROFILE' ,  $env:USERPROFILE )
 
+$results_directory = 'reports'
+$default_results_basename = 'report_'
+$results_basename = $results_filename -replace '\..*$', ''
 $ToolsPath = '<%= @root -%>'
-$ReportsPath = "${ToolsPath}\reports"
+$ReportsPath = "${ToolsPath}\${results_directory}"
 $RubyPath = "${ToolsPath}\ruby"
 $GEM_VERSION = '2.1.0'
 $RAKE_VERSION = '10.1.0'
@@ -52,6 +61,17 @@ $env:URU_INVOKER = 'powershell'
 & ./uru_rt.exe $tag
 & ./uru_rt.exe 'ruby' "${RubyPath}\lib\ruby\gems\${GEM_VERSION}\gems\rake-${RAKE_VERSION}\bin\rake" 'spec'
 
+if ($results_basename  -ne $default_results_basename ) {
+  # Rename hardcoded in Rakefile serverspec reports to specified names
+  if ( test-path -path $results_directory) {
+    pushd $results_directory
+    write-debug "results in ${results_directory}/${results_filename}"
+    move-item -path "${default_results_basename}.json" -destination $results_filename -force
+    move-item -path "${default_results_basename}.html" -destination "${results_basename}.html" -force
+    popd
+  }
+}
+
 popd 
-type "${ReportsPath}\\report_.json"
+type "${ReportsPath}\\${results_filename}"
 
