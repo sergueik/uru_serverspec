@@ -2,6 +2,12 @@
 
 export URU_HOME='<%= @root -%>'
 
+RESULTS_DIRECTORY='reports'
+DEFAULT_RESULTS_BASENAME='report_'
+
+RESULTS_FILENAME=${1:-$DEFAULT_RESULTS_BASENAME.json}
+RESULTS_BASENAME=${RESULTS_FILENAME%.*}
+
 export URU_INVOKER=bash
 export GEM_VERSION=2.1.0
 export RAKE_VERSION=10.1.0
@@ -57,3 +63,13 @@ fi
 # Run the spec
 $URU_RUNNER ruby ruby/lib/ruby/gems/${GEM_VERSION}/gems/rake-${RAKE_VERSION}/bin/rake spec
 
+# Rename hardcoded in Rakefile serverspec reports to specified names
+if [[ "${RESULTS_BASENAME}" != "${DEFAULT_RESULTS_BASENAME}" ]]; then
+  if [ -d $RESULTS_DIRECTORY ] ; then
+    1>& 2 echo "Results in ${RESULTS_DIRECTORY}/${RESULTS_FILENAME}"
+    1>/dev/null 2>/dev/null pushd $RESULTS_DIRECTORY
+    1>& 2 mv "${DEFAULT_RESULTS_BASENAME}.json" $RESULTS_FILENAME
+    1>& 2 mv "${DEFAULT_RESULTS_BASENAME}.html" "${RESULTS_BASENAME}.html"
+    1>/dev/null 2>/dev/null popd
+  fi
+fi
