@@ -9,15 +9,19 @@ RESULTS_FILENAME=${1:-$DEFAULT_RESULTS_BASENAME.json}
 RESULTS_BASENAME=${RESULTS_FILENAME%.*}
 
 # set -x
-# URU_HOME='<%= @uru_home -%>'
 if [ -z $URU_HOME ]
 then
-  URU_HOME='/uru'
-  # test copying the directory to custom location
-  # URU_HOME='/home/uru_user/uru_homebased'
+  if which realpath &> /dev/null; then
+    URU_HOME=$(realpath $(dirname $0))
+  else
+    URU_HOME='<%= @uru_home -%>'
+  fi
+  echo "URU_HOME=${URU_HOME}"
+  if [ -z $URU_HOME ] ; then
+    URU_HOME='/uru'	
+  fi	
 fi
 export URU_HOME
-
 export URU_INVOKER=bash
 export LD_LIBRARY_PATH=$URU_HOME/ruby/lib
 
@@ -88,10 +92,10 @@ if [ "$GEM_VERSION" = '2.3.0' ] ; then
     }
    }
 EOF
-  
+
    echo Y |$URU_RUNNER admin rm $RUBY_TAG_LABEL > /dev/null
    $URU_RUNNER admin add ruby/bin
-   
+
    if [ ! -z $DEBUG ]
    then
      $URU_RUNNER ls --verbose
@@ -101,18 +105,18 @@ EOF
      TAG=`$URU_RUNNER ls 2>& 1|awk '{print $1}'`
      $URU_RUNNER $TAG
    fi
-   
+
    # Copy .gems to default location
-   
+
    # TODO: fix it properly
    cp -R .gem $HOME
-   
+
    if [ ! -z $DEBUG ]
    then
      # Verify the gems
      $URU_RUNNER gem list --local
    fi
-   
+
    # Check that the required gems are present
    $URU_RUNNER gem list| grep -qi serverspec
    if [ $? != 0 ]; then
