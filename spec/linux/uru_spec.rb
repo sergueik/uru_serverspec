@@ -2,11 +2,11 @@ require 'spec_helper'
 
 context 'uru' do
   uru_home = '/uru'
-  gem_version = '2.1.0'
-  user_home = '/root'
+  gem_version = '2.5.0'
+  user_home = '/home/sergueik'
   context 'Path' do
     describe command('echo $PATH'), :if => ENV.has_key?('URU_INVOKER') do
-      its(:stdout) { should match Regexp.new("_U1_:#{user_home}/.gem/ruby/#{gem_version}/bin:#{uru_home}/ruby/bin:_U2_:") }
+	    its(:stdout) { should match Regexp.new("_U1_:#{user_home}/.gem/ruby/#{gem_version}/bin:#{uru_home}/ruby/bin:.*_U2_:") }
     end
   end
   context 'Directories' do
@@ -42,6 +42,8 @@ context 'uru' do
     end
   end
   context 'user sensitive' do
+    # NOTE: fragile to run under sudo -s
+    root_home = '/home/sergueik'
     root_home = '/root'
     # condition at the 'describe' level
     context 'home directory' do

@@ -284,34 +284,71 @@ gem install %USERPROFILE%\Downloads\ffi-1.9.18.gem
 On Linux, the tarball creation starts with compiling Ruby from source, configured with a prefix `${URU_HOME}/ruby`:
 ```bash
 export URU_HOME='/uru'
-export RUBY_VERSION='2.1.9'
-wget https://cache.ruby-lang.org/pub/ruby/2.1/ruby-${RUBY_VERSION}.tar.gz
+export RUBY_VERSION='2.5.1'
+export RUBY_RELEASE='2.5'
+
+cd $URU_HOME
+wget https://cache.ruby-lang.org/pub/ruby/${RUBY_RELEASE}/ruby-${RUBY_VERSION}.tar.gz
 tar xzvf ruby-${RUBY_VERSION}.tar.gz
+
+```
+followed by on Centos
+```sh
 yum groupinstall -y 'Developer Tools'
 yum install -y zlib-devel openssl-devel libyaml-devel
+```
+and on Ubuntu
 
+```sh
+apt-get install -y zlib1g-dev libssl-dev libyaml-dev
+```
+followed by
+```
 pushd ruby-${RUBY_VERSION}
 ./configure --prefix=${URU_HOME}/ruby --disable-install-rdoc --disable-install-doc
 make clean
 make
+rm -fr  ruby
 sudo make install
 ```
-Next one installs binary distribution of `uru`:
+Next one is to 
+check the page `https://bitbucket.org/jonforums/uru/downloads/` for the latest available
+version of `uru_rt`:
+```sh
+curl -L -k   https://bitbucket.org/jonforums/uru/downloads/uru.json  | grep '"version":'
+```
+and install binary distribution of `uru`
 ```bash
 export URU_HOME='/uru'
-export URU_VERSION='0.8.1'
+export URU_VERSION='0.8.5'
 pushd $URU_HOME
 wget https://bitbucket.org/jonforums/uru/downloads/uru-${URU_VERSION}-linux-x86.tar.gz
 tar xzvf uru-${URU_VERSION}-linux-x86.tar.gz
 ```
 After Ruby and__uru__is installed one switches to the isolated environment
 and installs the required gem dependencies
-```bash
+```sh
 ./uru_rt admin add ruby/bin
+```
+```text
+---> Registered ruby at `/uru/ruby/bin` as `251p57`
+```
+```sh
 ./uru_rt ls
-./uru_rt 219p490
+```
+```text
+251p57      : ruby 2.5.1p57 (2018-03-29 revision 63029) [x86_64-linux]
+```
+```sh
+export URU_INVOKER=bash
+./uru_rt 251p57
+```
+```text
+---> now using ruby 2.5.1-p57 tagged as `251p57`
+```
+```sh
 ./uru_rt gem list
-./uru_rt gem install --no-ri --no-rdoc rspec serverspec rake rspec_junit_formatter
+./uru_rt gem install --no-ri --no-rdoc rspec serverspec rake rspec_junit_formatter yamllint rexml
 cp -R ~/.gem .
 ```
 Finally the `$URU_HOME` is converted to an archive, that can be provisioned on a clean system.
@@ -329,12 +366,18 @@ io-console (0.4.3)
 json (1.8.1)
 minitest (4.7.5)
 psych (2.0.5)
-rake (10.1.0)
+rake (13.0.6)
 rdoc (4.1.0)
 test-unit (2.1.10.0)
 ```
 the `${URU_HOME}\.gem` directory may need to get copied to `${HOME}`
 
+* update the 
+`RAKE_VERSION`, `GEM_VERSION` and `RUBY_VERSION` accordingly.
+After installing `rake` gem it may need to get copied
+```sh
+cp -R  ~/.gem/ruby/2.5.0/gems/rake-13.0.6 ruby/lib/ruby/gems/2.5.0/gems/
+```
 If the error
 ```ruby
 <internal:gem_prelude>:1:in `require': cannot load such file -- rubygems.rb (LoadError)
@@ -931,8 +974,8 @@ serverspec provisioner:
 It is possible to install the `inspec.gem` for [Chef Inspec](https://github.com/chef/inspec)
 in the __uru__ environment and repackage and use in the similar fashion, use case as with serverspec. Note for `mixlib-shellout` you will need to use Ruby __2.2.x__
 To build dependency gems one will need to execute
-```shell
-sudo apt-get install build-essentials
+```sh
+sudo apt-get install build-essential
 ```
 
 or
