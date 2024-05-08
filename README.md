@@ -3,12 +3,13 @@
 ### Introduction
 
 There is a challenge to run [serverspec](http://serverspec.org/resource_types.html) on the instance managed
-by Puppet or Chef after the Enterprise single sign-on (SSO) a.k.a. access management software provisioned.
-For example review the [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf)
-on Unix and various vendors-specific authentication schemes on Windows, e.g.
-[2 factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication).
-By design such software renders ssh and winrm ssh key-based remote access impossible.
-This is the critical mechanism serverspec / inspec relies on for code delivery.
+by Puppet or Chef for a network access locked down cloud environment
+after the single sign-on (SSO) a.k.a. access management software has been provisioned making remote access impossible.
+For example review the Enterprise [BokS](http://www.foxt.com/wp-content/uploads/2015/03/BoKS-Server-Control.pdf) 
+for Unix ssh and various vendors-specific authentication schemes e.g.
+[milti factor authentication](https://en.wikipedia.org/wiki/Multi-factor_authentication) (MFA) for Windows logon.
+By design such software disables ssh and winrm ssh key-based remote access.
+Remote access however is critical transport mechanism the vanilla serverspec / inspec relies on for code delivery.
 
 With the help of [Ruby Version Manager](https://en.wikipedia.org/wiki/Ruby_Version_Manager) and specifically [uru Ruby Installer](https://rubyinstaller.org/add-ons/uru.html) one can bootstrap a standalone Ruby environment to run serverspec directly on the instance, on either Linux or Windows.
 The only prerequisite on a Linux system are `openssl-libs`, `libcrypt` and `libyaml` libraries, those are very likely already installed for openssl stack on a generic linux box.
