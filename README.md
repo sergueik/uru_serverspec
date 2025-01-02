@@ -985,6 +985,16 @@ sudo yum install make automake gcc gcc-c++ kernel-devel
 ```
 Note: serverspec and inspec appear to use very similar `Rakefile` and auxiliary Ruby files. Switch from one to the other was not fully tested yet.
 
+you can run `inspec-bin` as a Ruby script in a similar manner to running rake using ruby with the specific path to the gem's executable.
+
+To run inspec-bin directly as a Ruby script, you would follow this structure:
+
+```
+ruby ${RubyPath}/lib/ruby/gems/${GEM_VERSION}/gems/inspec-bin-${INSPEC_BIN_VERSION}/bin/inspec
+```
+
+
+
 ###  Puppet Beaker Integration testing tool
 
 Recently, Puppet switched to use Beaker to wrap Vagrant(Docker) and Serverspec to provision the instance(s),
@@ -1074,6 +1084,7 @@ to segregate the templates and variables (like [Puppet](https://puppet.com) or [
 
  * ["Ruby Version Manager" chapter of "Ruby on Windows Guides" book by Boško Ivanišević](http://rubyonwindowsguides.github.io/book/ch02-03.html)
  * the original __uru__ project on [bitbucket](https://bitbucket.org/jonforums/uru)
+ * [mirror](https://github.com/preetpalS/uru)
  * [skeleton Vagrantfile that installs and runs ruby, gem, serverspec after provision](https://github.com/andrewwardrobe/PuppetIntegration)
  * [skeleton Vagrantfile for puppet provision](https://github.com/wstinkens/example_puppet-serverspec/)
  * [sensu-plugins-serverspec](https://github.com/sensu-plugins/sensu-plugins-serverspec)
